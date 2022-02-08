@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import keyword
 from typing import Any
 
-from lark import Lark, Transformer
+from lark import Lark, Transformer, v_args
 
 
 global_env = {}
@@ -29,7 +29,8 @@ def analyze(expr):
         case Pair("if", Pair(q, Pair(a, Pair(e, ())))):
             return analyze_if(q, a, e)
         case Pair("quote" | "defun" | "if", _):
-            raise SyntaxError(to_string(expr))
+            line, col = src_pos(expr)
+            raise SyntaxError(f"{to_string(expr)} (line {line}, column {col})")
         case Pair(f, args):
             return analyze_application(f, args)
         case str(symbol):
@@ -37,7 +38,8 @@ def analyze(expr):
         case list([*x]):
             return analyze_sequence(x)
         case _:
-            raise NotImplementedError(to_string(expr))
+            line, col = src_pos(expr)
+            raise NotImplementedError(f"{to_string(expr)} (line {line}, column {col})")
 
 
 def analyze_application(f, args):
@@ -59,7 +61,14 @@ def analyze_args(args):
 
 
 def analyze_reference(name):
-    return lambda env: env[name]
+    def the_reference(env):
+        try:
+            return env[name]
+        except KeyError:
+            line, col = src_pos(name)
+            raise NameError(f"{name} (line {line}, column {col})")
+
+    return the_reference
 
 
 def analyze_sequence(exprs):
@@ -96,7 +105,12 @@ def analyze_definition(name, params, body):
 
     def the_definition(env):
         if name in global_env:
-            raise NameError(f"{name} already defined")
+            first_name = next(filter(lambda n: n == name, global_env.keys()))
+            line1, col1 = src_pos(first_name)
+            line2, col2 = src_pos(name)
+            raise NameError(
+                f"{name} multiply defined (line {line1}, column {col1}) and (line {line2}, column {col2})"
+            )
         glob = {}
         exec(fndef, {"body_exec": body_exec, "env": env}, glob)
         global_env[name] = glob[python_name]
@@ -154,26 +168,42 @@ sexpr_parser = Lark(
     %ignore WS
 """,
     start="program",
+    propagate_positions=True,
 )
+
+SRCMAP = {}
+
+
+def src_pos(obj):
+    return SRCMAP[id(obj)][0]
 
 
 class TreeToSexpr(Transformer):
-    def quote(self, q):
+    @v_args(meta=True)
+    def quote(self, q, meta):
         (q,) = q
-        return self.list(["quote", q])
+        return self.list(["quote", q], meta)
 
-    def symbol(self, s):
+    @v_args(meta=True)
+    def symbol(self, s, meta):
         (s,) = s
-        return s[:]
+        name = s[:]
+        SRCMAP[id(name)] = ((meta.line, meta.column), (meta.end_line, meta.end_column))
+        return name
 
     def number(self, n):
         (n,) = n
         return int(n)
 
-    def list(self, l):
+    @v_args(meta=True)
+    def list(self, l, meta):
         out = ()
         for x in l[::-1]:
             out = cons(x, out)
+            SRCMAP[id(out)] = (
+                (meta.line, meta.column),
+                (meta.end_line, meta.end_column),
+            )
         return out
 
     def program(self, prog):
