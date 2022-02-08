@@ -26,7 +26,7 @@ def analyze(expr):
         case Pair("defun", Pair(name, Pair(args, Pair(body, ())))):
             return analyze_definition(name, args, body)
         case Pair("if", Pair(q, Pair(a, Pair(e, ())))):
-            raise NotImplementedError()
+            return analyze_if(q, a, e)
         case Pair(f, args):
             return analyze_application(f, args)
         case str(symbol):
@@ -71,16 +71,30 @@ def analyze_sequence(exprs):
     return the_sequence
 
 
+def analyze_if(q, a, e):
+    q_exec = analyze(q)
+    a_exec = analyze(a)
+    e_exec = analyze(e)
+    return lambda env: e_exec(env) if q_exec(env) == "nil" else a_exec(env)
+
+
 def analyze_definition(name, params, body):
     body_exec = analyze(body)
-    param_str = ", ".join(map(str, iter(params)))
+    param_strs = list(map(pythonize, iter(params)))
     python_name = pythonize(name)
+
+    local_env = ", ".join(f"'{p}': {pyp}" for p, pyp in zip(params, param_strs))
+    local_env = "local_env = env | {" + local_env + "}"
+
+    fndef = f"""def {python_name}({", ".join(param_strs)}):
+                    {local_env}
+                    return body_exec(local_env)"""
 
     def the_definition(env):
         glob = {}
         exec(
-            f"def {python_name}({param_str}): return body_exec(global_env)",
-            {"body_exec": body_exec, "global_env": global_env},
+            fndef,
+            {"body_exec": body_exec, "env": env},
             glob,
         )
         global_env[name] = glob[python_name]
@@ -89,13 +103,18 @@ def analyze_definition(name, params, body):
 
 
 def pythonize(name: str) -> str:
-    return (
-        name.replace("_", "__")
-        .replace("-", "_")
+    pyname = name.replace("_", "__")
+    if pyname.endswith("?"):
+        pyname = "is_" + pyname[:-1]
+    pyname = (
+        pyname.replace("-", "_")
         .replace("/", "_slash_")
         .replace("+", "_plus_")
         .replace("*", "_star_")
     )
+    if len(pyname) > 1 and pyname[-1] == "_" and pyname[-2] != "_":
+        pyname = pyname[:-1]
+    return pyname
 
 
 #  The S-Expression Parser
@@ -158,6 +177,10 @@ class TreeToSexpr(Transformer):
 
 #  The Basics
 # ============
+
+
+def atom(x):
+    return "nil" if is_pair(x) else "t"
 
 
 @dataclass
@@ -223,6 +246,12 @@ def to_string(obj):
         return "".join(out)
     else:
         return str(obj)
+
+
+#  Environment
+# =============
+
+global_env["atom"] = atom
 
 
 #  J-Bob

@@ -1,4 +1,13 @@
 
+
+(defun defs? (known-defs defs)
+  (if (atom defs)
+      't
+      (if (def? known-defs (car defs))
+          (defs? (list-extend known-defs (car defs))
+                 (cdr defs))
+          'nil)))
+
 (defun J-Bob/step (defs e steps)
   (if (defs? '() defs)
       (if (expr? defs 'any e)
