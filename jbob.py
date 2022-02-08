@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import keyword
 from typing import Any
 
 from lark import Lark, Transformer
@@ -27,6 +28,8 @@ def analyze(expr):
             return analyze_definition(name, args, body)
         case Pair("if", Pair(q, Pair(a, Pair(e, ())))):
             return analyze_if(q, a, e)
+        case Pair("quote" | "defun" | "if", _):
+            raise SyntaxError(to_string(expr))
         case Pair(f, args):
             return analyze_application(f, args)
         case str(symbol):
@@ -111,9 +114,12 @@ def pythonize(name: str) -> str:
         .replace("/", "_slash_")
         .replace("+", "_plus_")
         .replace("*", "_star_")
+        .replace(".", "_dot_")
     )
     if len(pyname) > 1 and pyname[-1] == "_" and pyname[-2] != "_":
         pyname = pyname[:-1]
+    if keyword.iskeyword(pyname):
+        pyname = pyname + "_"
     return pyname
 
 
@@ -138,7 +144,7 @@ sexpr_parser = Lark(
     quote: "'" sexpr
     list: "(" sexpr* ")"    
          
-    SYMBOL: ("A".."Z" | "a".."z" | "-" | "+" | "/" | "_" | "." | "!" | "?")+
+    SYMBOL: ("A".."Z" | "a".."z" | "0".."9" | "-" | "+" | "/" | "_" | "." | "!" | "?")+
     
     COMMENT: ";" /[^\n]*/ NEWLINE
     %ignore COMMENT
@@ -195,6 +201,9 @@ class Pair:
             pair = pair.cdr
 
 
+assert Pair(1, 2) == Pair(1, 2)
+
+
 def is_null(obj):
     return obj == ()
 
@@ -208,11 +217,11 @@ def cons(a, d):
 
 
 def car(p):
-    return p.car
+    return p.car if is_pair(p) else ()
 
 
 def cdr(p):
-    return p.cdr
+    return p.cdr if is_pair(p) else ()
 
 
 def cadr(p):
@@ -252,6 +261,9 @@ def to_string(obj):
 # =============
 
 global_env["atom"] = atom
+global_env["car"] = car
+global_env["cdr"] = cdr
+global_env["equal"] = lambda x, y: "t" if x == y else "nil"
 
 
 #  J-Bob

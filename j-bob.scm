@@ -1,4 +1,77 @@
 
+; page 204
+
+(defun list0 () '())
+(defun list0? (x) (equal x '()))
+
+(defun list1 (x) (cons x (list0)))
+(defun list1? (x)
+  (if (atom x) 'nil (list0? (cdr x))))
+(defun elem1 (xs) (car xs))
+
+(defun list2 (x y) (cons x (list1 y)))
+(defun list2? (x)
+  (if (atom x) 'nil (list1? (cdr x))))
+(defun elem2 (xs) (elem1 (cdr xs)))
+
+(defun list3 (x y z) (cons x (list2 y z)))
+(defun list3? (x)
+  (if (atom x) 'nil (list2? (cdr x))))
+(defun elem3 (xs) (elem2 (cdr xs)))
+
+(defun tag (sym x) (cons sym x))
+(defun tag? (sym x)
+  (if (atom x) 'nil (equal (car x) sym)))
+(defun untag (x) (cdr x))
+
+(defun dethm? (x)
+  (if (tag? 'dethm x) (list3? (untag x)) 'nil))
+
+(defun member? (x ys)
+  (if (atom ys)
+      'nil
+      (if (equal x (car ys))
+          't
+          (member? x (cdr ys)))))
+
+;todo: more
+
+(defun dethm.name (def) (elem1 (untag def)))
+
+; page 205
+
+(defun lookup (name defs)
+  (if (atom defs)
+      name
+      (if (equal (def.name (car defs)) name)
+          (car defs)
+          (lookup name (cdr defs)))))
+
+(defun undefined? (name defs)
+  (if (var? name)
+      (equal (lookup name defs) name)
+      'nil))
+
+; page 206
+
+; page 207
+
+; page 208
+
+(defun def? (known-defs def)
+  (if (dethm? def)
+      (if (undefined? (dethm.name def) known-defs)
+          (def-contents? known-defs
+                         (dethm.formals def)
+                         (dehgm.body def))
+          'nil)
+      (if (defun? def)
+          (if (undefined? (defun.name def) known-defs)
+              (def-contents? (extend-rec known-defs def)
+                             (defun.formals def)
+                             (defun.body def))
+              'nil)
+          'nil)))
 
 (defun defs? (known-defs defs)
   (if (atom defs)
@@ -7,6 +80,17 @@
           (defs? (list-extend known-defs (car defs))
                  (cdr defs))
           'nil)))
+
+
+; page 209
+
+; page 210
+
+; page 211
+
+; page 212
+
+; page 213
 
 (defun J-Bob/step (defs e steps)
   (if (defs? '() defs)
@@ -26,6 +110,8 @@
           (rewrite/define+ defs pfs)
           defs)
       defs))
+
+; page 214
 
 (defun axioms ()
   '((dethm atom/cons (x y)
