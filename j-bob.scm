@@ -92,7 +92,42 @@
       (equal (lookup name defs) name)
       'nil))
 
-; page 206
+; page 206 - left
+
+(defun exprs? (defs vars es)
+  (if (atom es)
+      't
+      (if (var? (car es))
+          (if (bound? (car es) vars)
+              (exprs? defs vars (cdr es))
+              'nil)
+          (if (quote? (car es))
+              (exprs? defs vars (cdr es))
+              (if (if? (car es))
+                  (if (exprs? defs vars (if-QAE (car es)))
+                      (exprs? defs vars (cdr es))
+                      'nil)
+                  (if (app? (car es))
+                      (if (app-arity? defs (car es))
+                          (if (exprs? defs vars (app.args (car es)))
+                              (exprs? defs vars (cdr es))
+                              'nil)
+                          'nil)
+                      'nil))))))
+
+(defun expr? (defs vars e)
+  (exprs? (defs vars (list1 e))))
+
+; page 206 - right
+
+(defun formals? (vars)
+  (if (atom vars)
+      't
+      (if (var? (car vars))
+          (if (member? (car vars) (cdr vars))
+              'nil
+              (formals? (cdr vars)))
+          'nil)))
 
 ; page 207
 

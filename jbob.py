@@ -298,6 +298,7 @@ def to_string(obj):
 
 global_env["num"] = num
 global_env["atom"] = atom
+global_env["cons"] = cons
 global_env["car"] = car
 global_env["cdr"] = cdr
 global_env["equal"] = lambda x, y: "t" if x == y else "nil"
