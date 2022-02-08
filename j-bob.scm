@@ -1,5 +1,5 @@
 
-; page 204
+; page 204 - left
 
 (defun list0 () '())
 (defun list0? (x) (equal x '()))
@@ -24,9 +24,6 @@
   (if (atom x) 'nil (equal (car x) sym)))
 (defun untag (x) (cdr x))
 
-(defun dethm? (x)
-  (if (tag? 'dethm x) (list3? (untag x)) 'nil))
-
 (defun member? (x ys)
   (if (atom ys)
       'nil
@@ -34,9 +31,52 @@
           't
           (member? x (cdr ys)))))
 
-;todo: more
+; page 204 - right
 
+(defun quote-c (value) (tag 'quote (list1 value)))
+(defun quote? (x) (if (tag? 'quote x) (list1? (untag x)) 'nil))
+(defun quote.value (e) (elem1 (untag e)))
+
+(defun if-c (Q A E) (tag 'if (list3 Q A E)))
+(defun if? (x) (if (tag? 'if x) (list3? (untag x)) 'nil))
+(defun if.Q (e) (elem1 (untag e)))
+(defun if.A (e) (elem2 (untag e)))
+(defun if.E (e) (elem3 (untag e)))
+
+(defun app-c (name args) (cons name args))
+(defun app? (x)
+  (if (atom x)
+      'nil
+      (if (quote? x)
+          'nil
+          (if (if? x)
+              'nil
+              't))))
+(defun app.name (e) (car e))
+(defun app.args (e) (cdr e))
+
+(defun var? (x)
+  (if (equal x 't)
+      'nil
+      (if (equal x 'nil)
+          'nil
+          (if (natp x)
+              'nil
+              (atom x)))))
+
+(defun defun-c (name formals body)
+  (tag 'defun (list3 name formals body)))
+(defun defun? (x) (if (tag? 'defun x) (list3? (untag x)) 'nil))
+(defun defun.name (def) (elem1 (untag def)))
+(defun defun.formals (def) (elem2 (untag def)))
+(defun defun.body (def) (elem3 (untag def)))
+
+(defun dethm-c (name formals body)
+  (tag 'dethm (list3 name formals body)))
+(defun dethm? (x) (if (tag? 'dethm x) (list3? (untag x)) 'nil))
 (defun dethm.name (def) (elem1 (untag def)))
+(defun dethm.formals (def) (elem2 (untag def)))
+(defun dethm.body (def) (elem3 (untag def)))
 
 ; page 205
 
@@ -58,12 +98,17 @@
 
 ; page 208
 
+(defun def-contents? (known-defs formals body)
+  (if (formals? formals)
+      (expr? known-defs formals body)
+      'nil))
+
 (defun def? (known-defs def)
   (if (dethm? def)
       (if (undefined? (dethm.name def) known-defs)
           (def-contents? known-defs
                          (dethm.formals def)
-                         (dehgm.body def))
+                         (dethm.body def))
           'nil)
       (if (defun? def)
           (if (undefined? (defun.name def) known-defs)

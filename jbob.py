@@ -89,17 +89,16 @@ def analyze_definition(name, params, body):
     local_env = ", ".join(f"'{p}': {pyp}" for p, pyp in zip(params, param_strs))
     local_env = "local_env = env | {" + local_env + "}"
 
+    # define functions as actual python functions with name and arguments
     fndef = f"""def {python_name}({", ".join(param_strs)}):
                     {local_env}
                     return body_exec(local_env)"""
 
     def the_definition(env):
+        if name in global_env:
+            raise NameError(f"{name} already defined")
         glob = {}
-        exec(
-            fndef,
-            {"body_exec": body_exec, "env": env},
-            glob,
-        )
+        exec(fndef, {"body_exec": body_exec, "env": env}, glob)
         global_env[name] = glob[python_name]
 
     return the_definition
@@ -204,6 +203,13 @@ class Pair:
 assert Pair(1, 2) == Pair(1, 2)
 
 
+def num(x):
+    if isinstance(x, int):
+        return x
+    else:
+        return 0
+
+
 def is_null(obj):
     return obj == ()
 
@@ -260,10 +266,14 @@ def to_string(obj):
 #  Environment
 # =============
 
+global_env["num"] = num
 global_env["atom"] = atom
 global_env["car"] = car
 global_env["cdr"] = cdr
 global_env["equal"] = lambda x, y: "t" if x == y else "nil"
+global_env["natp"] = lambda x: "t" if isinstance(x, int) and x >= 0 else "nil"
+global_env["+"] = lambda x, y: num(x) + num(y)
+global_env["<"] = lambda x, y: "t" if num(x) < num(y) else "nil"
 
 
 #  J-Bob
