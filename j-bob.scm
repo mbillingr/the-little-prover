@@ -116,7 +116,7 @@
                       'nil))))))
 
 (defun expr? (defs vars e)
-  (exprs? (defs vars (list1 e))))
+  (exprs? defs vars (list1 e)))
 
 ; page 206 - right
 
