@@ -448,6 +448,30 @@
 
 ; page 209 - right
 
+(defun totality/< (meas formals app)
+  (app-c '<
+         (list2 (sub-e formals (app.args app) meas)
+                meas)))
+
+(defun totality/meas (meas formals apps)
+  (if (atom apps)
+      '()
+      (cons (totality/< meas formals (car apps))
+            (totality/meas meas formals (cdr apps)))))
+
+(defun totality/if (meas f formals e)
+  (if (if? e)
+      (conjunction
+        (list-extend
+          (totality/meas meas formals
+            (expr-recs f (if.Q e)))
+          (if-c-when-necessary (if.Q e)
+            (totality/if meas f formals (if.A e))
+            (totality/if meas f formals (if.E e)))))
+      (conjunction
+        (totality/meas meas formals
+          (expr-recs f e)))))
+
 (defun totality/claim (meas def)
   (if (equal meas 'nil)
       (if (equal (expr-recs (defun.name def)
