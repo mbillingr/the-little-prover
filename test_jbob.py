@@ -54,3 +54,30 @@ class TestRecess:
                 '((() (if-same a c))))""",
             "'c",
         )
+
+    def test_frame_16_simplified(self):
+        assert_same_value(
+            """(J-Bob/step (prelude) 
+                '(if a c c) 
+                '((() (if-same a c))
+                  (() (if-same (if 'x 'y 'z) c))
+                ))""",
+            "'(if (if 'x 'y 'z) c c)",
+        )
+
+    def test_frame_17_simplified(self):
+        assert_same_value(
+            """(J-Bob/step (prelude) 
+                '(if a c c) 
+                '((() (if-same a c))
+                  (() (if-same (if 'x 'y (cons 'z '(z))) c))
+                  ((Q E) (cons 'z '(z)))
+                ))""",
+            "'(if (if 'x 'y '(z z)) c c)",
+        )
+
+    def test_frame_29_simplified(self):
+        assert_same_value(
+            "(J-Bob/prove (prelude) '())",
+            "''t",
+        )
