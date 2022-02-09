@@ -209,7 +209,7 @@
       'nil
       (if (equal n from)
           (car args)
-          (get-arg from n (cdr args) (+ from '1)))))
+          (get-arg-from n (cdr args) (+ from '1)))))
 
 (defun get-arg (n args) (get-arg-from n args '1))
 
@@ -415,7 +415,7 @@
               (cons (car es)
                     (sub-es vars args (cdr es)))
               (if (if? (car es))
-                  (cons QAE-if (sub-es vars args (if-QAE (car es)))
+                  (cons (QAE-if (sub-es vars args (if-QAE (car es))))
                         (sub-es vars args (cdr es)))
                   (cons (app-c (app.name (car es))
                                (sub-es vars args (app.args (car es))))
@@ -656,6 +656,11 @@
       (equal (atom (cons x y)) 'nil))
     (dethm car/cons (x y)
       (equal (car (cons x y)) x))
+    (dethm cdr/cons (x y)
+      (equal (cdr (cons x y)) y))
+    ; todo: more...
+    (dethm if-same (x y)
+      (equal (if x y y) y))
     ; todo: more...
     (dethm size/cdr (x)
       (if (atom x)

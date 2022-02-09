@@ -42,19 +42,50 @@ def analyze(expr):
             raise NotImplementedError(f"{to_string(expr)} (line {line}, column {col})")
 
 
+class AddErrorContext:
+    def __init__(self, expr):
+        self.line, self.col = src_pos(expr)
+
+    def __call__(self, func):
+        def wrapped(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Traceback as e:
+                original_exception = e.args[0]
+                existing_context = e.args[1]
+                new_context = existing_context + self.context_str()
+                raise Traceback(original_exception, new_context) from None
+            except Exception as e:
+                raise Traceback(e, self.context_str()) from None
+
+        return wrapped
+
+    def context_str(self):
+        return f"(line {self.line}, column {self.col})"
+
+
+class Traceback(RuntimeError):
+    pass
+
+
 def analyze_application(fexpr, args):
     f_exec = analyze(fexpr)
     arg_execs = analyze_args(args)
 
+    @AddErrorContext(fexpr)
     def the_application(env):
         f = f_exec(env)
-        if not callable(f):
-            line, col = src_pos(fexpr)
-            raise TypeError(
-                f"Attempt to call {f} of type {type(f)} (line {line}, column {col})"
-            )
         args = map(lambda a: a(env), iter(arg_execs))
-        return f(*args)
+        try:
+            return f(*args)
+        except Traceback as e:
+            line, col = src_pos(fexpr)
+            raise Traceback(
+                e.args[0], e.args[1] + f"(line {line}, column {col})"
+            ) from None
+        except Exception as e:
+            line, col = src_pos(fexpr)
+            raise Traceback(e, f"(line {line}, column {col})") from None
 
     return the_application
 
@@ -237,6 +268,9 @@ class Pair:
             yield pair.car
             pair = pair.cdr
 
+    def __repr__(self):
+        return to_string(self)
+
 
 assert Pair(1, 2) == Pair(1, 2)
 
@@ -301,13 +335,12 @@ def to_string(obj):
         return str(obj)
 
 
-def display(obj):
-    print(to_string(obj))
+def display(*objs):
+    print(" ".join(map(to_string, objs)))
 
 
 #  Environment
 # =============
-
 global_env["num"] = num
 global_env["atom"] = atom
 global_env["cons"] = cons
@@ -321,33 +354,44 @@ global_env["<"] = lambda x, y: "t" if num(x) < num(y) else "nil"
 
 #  J-Bob
 # =======
-
-
 with open("j-bob.scm") as fd:
     ast = parse(fd.read())
 program = analyze(ast)
 evaluate(program)
 
-display(evaluate("(J-Bob/step (prelude) '(car (cons 'ham '(cheese))) '())"))
-
-display(evaluate("(J-Bob/step (prelude) '(atom '()) '((() (atom '()))))"))
 
 display(
+    "chapter 1, example 2:",
+    evaluate("(J-Bob/step (prelude) '(atom '()) '((() (atom '()))))"),
+)
+display(
+    "chapter 1, example 3:",
     evaluate(
         "(J-Bob/step (prelude)"
         "   '(atom (cons 'ham '(eggs))) "
         "   '(((1) (cons 'ham '(eggs))) "
         "     (() (atom '(ham eggs)))"
         "))"
-    )
+    ),
 )
-
 display(
+    "chapter 1, example 4:",
     evaluate(
         """
         (J-Bob/step (prelude) 
             '(atom (cons a b)) 
             '((() (atom/cons a b))))
 """
-    )
+    ),
+)
+display(
+    "chapter 1, example 5:",
+    evaluate(
+        """
+        (J-Bob/step (prelude) 
+            '(equal 'flapjack (atom (cons a b))) 
+            '(((2) (atom/cons a b))
+              (() (equal 'flapjack 'nil))))
+"""
+    ),
 )
