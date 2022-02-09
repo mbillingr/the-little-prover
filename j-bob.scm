@@ -405,13 +405,228 @@
           (car args)
           (sub-var (cdr vars) (cdr args) var))))
 
+(defun sub-es (vars args es)
+  (if (atom es)
+      '()
+      (if (var? (car es))
+          (cons (sub-var vars args (car es))
+                (sub-es vars args (cdr es)))
+          (if (quote? (car es))
+              (cons (car es)
+                    (sub-es vars args (cdr es)))
+              (if (if? (car es))
+                  (cons QAE-if (sub-es vars args (if-QAE (car es)))
+                        (sub-es vars args (cdr es)))
+                  (cons (app-c (app.name (car es))
+                               (sub-es vars args (app.args (car es))))
+                        (sub-es vars args (cdr es))))))))
+
+(defun sub-e (vars args e)
+  (elem1 (sub-es vars args (list1 e))))
+
 ; page 209
 
-; page 210
+; page 210 - left
 
-; page 211
+; page 210 - right
 
-; page 212
+(defun find-focus-at-direction (dir e)
+  (if (equal dir 'Q)
+      (if.Q e)
+      (if (equal dir 'A)
+          (if.A e)
+          (if (equal dir 'E)
+              (if.E e)
+              (get-arg dir (app.args e))))))
+
+(defun rewrite-focus-at-direction (dir e1 e2)
+  (if (equal dir 'Q)
+      (if-c e2 (if.A e1) (if.E e1))
+      (if (equal dir 'A)
+          (if-c (if.Q e1) e2 (if.E e1))
+          (if (equal dir 'E)
+              (if-c (if.Q e1) (if.A e1) e2)
+              (app-c (app.name e1)
+                     (set-arg dir (app.args e1) e2))))))
+
+(defun focus-is-at-direction? (dir e)
+  (if (equal dir 'Q)
+      (if? e)
+      (if (equal dir 'A)
+          (if? e)
+          (if (equal dir 'E)
+              (if? e)
+              (if (app? e)
+                  (<=len dir (app.args e))
+                  'nil)))))
+
+(defun focus-is-at-path? (path e)
+  (if (atom path)
+      't
+      (if (focus-is-at-direction? (car path) e)
+          (focus-is-at-path? (cdr path)
+            (find-focus-at-direction (car path) e))
+          'nil)))
+
+(defun find-focus-at-path (path e)
+  (if (atom path)
+      e
+      (find-focus-at-path (cdr path)
+        (find-focus-at-direction (car path) e))))
+
+(defun rewrite-focus-at-path (path e1 e2)
+  (if (atom path)
+      e2
+      (rewrite-focus-at-direction (car path) e1
+        (rewrite-focus-at-path (cdr path)
+          (find-focus-at-direction (car path) e1)
+          e2))))
+
+; page 211 - left
+
+(defun prem-A? (prem path e)
+  (if (atom path)
+      'nil
+      (if (equal (car path) 'A)
+          (if (equal (if.Q e) prem)
+              't
+              (prem-A? prem (cdr path)
+                (find-focus-at-direction (car path) e)))
+          (prem-A? prem (cdr path)
+            (find-focus-at-direction (car path) e)))))
+
+(defun prem-E? (prem path e)
+  (if (atom path)
+      'nil
+      (if (equal (car path) 'E)
+          (if (equal (if.Q e) prem)
+              't
+              (prem-E? prem (cdr path)
+                (find-focus-at-direction (car path) e)))
+          (prem-E? prem (cdr path)
+            (find-focus-at-direction (car path) e)))))
+
+(defun follow-prems (path e thm)
+  (if (if? thm)
+      (if (prem-A? (if.Q thm) path e)
+          (follow-prems path e (if.A thm))
+          (if (prem-E? (if.Q thm) path e)
+              (follow-prems path e (if.E thm))
+              thm))
+      thm))
+
+(defun unary-op (rator rand)
+  (if (equal rator 'atom)
+      (atom rand)
+      (if (equal rator 'car)
+          (car rand)
+          (if (equal rator 'cdr)
+              (cdr rand)
+              (if (equal rator 'natp)
+                  (natp rand)
+                  (if (equal rator 'size)
+                      (size rand)
+                      'nil))))))
+
+; page 211 - right
+
+(defun binary-op (rator rand1 rand2)
+  (if (equal rator 'equal)
+      (equal rand1 rand2)
+      (if (equal rator 'cons)
+          (cons rand1 rand2)
+          (if (equal rator '+)
+              (+ rand1 rand2)
+              (if (equal rator '<)
+                  (< rand1 rand2)
+                  'nil)))))
+
+(defun apply-op (rator rands)
+  (if (member? rator '(atom car cdr natp size))
+      (unary-op rator (elem1 rands))
+      (if (member? rator '(equal cons + <))
+          (binary-op rator
+            (elem1 rands)
+            (elem2 rands))
+          'nil)))
+
+(defun rands (args)
+  (if (atom args)
+      '()
+      (cons (quote.value (car args))
+            (rands (cdr args)))))
+
+(defun eval-op (app)
+  (quote-c (apply-op (app.name app)
+                     (rands (app.args app)))))
+
+; page 212 - left
+
+(defun app-of-equal? (e)
+  (if (app? e)
+      (equal (app.name e) 'equal)
+      'nil))
+
+(defun equality (focus a b)
+  (if (equal focus a)
+      b
+      (if (equal focus b)
+          a
+          focus)))
+
+(defun equality/equation (focus concl-inst)
+  (if (app-of-equal? concl-inst)
+      (equality focus
+        (elem1 (app.args concl-inst))
+        (elem2 (app.args concl-inst)))
+      focus))
+
+(defun equality/path (e path thm)
+  (if (focus-is-at-path? path e)
+      (rewrite-focus-at-path path e
+        (equality/equation
+          (find-focus-at-path path e)
+          (follow-prems path e thm)))
+      e))
+
+; page 212 - right
+
+(defun equality/def (claim path app def)
+  (if (rator? def)
+      (equality/path claim path
+        (app-c 'equal (list2 app (eval-op app))))
+      (if (defun? def)
+          (equality/path claim path
+            (sub-e (defun.formals def)
+              (app.args app)
+              (app-c 'equal
+                (list2 (app-c (defun.name def)
+                              (defun.formals def))
+                       (defun.body def)))))
+          (if (dethm? def)
+              (equality/path claim path
+                (sub-e (dethm.formals def)
+                  (app.args app)
+                  (dethm.body def)))
+              claim))))
+
+(defun rewrite/step (defs claim step)
+  (equality/def claim (elem1 step) (elem2 step)
+    (lookup (app.name (elem2 step)) defs)))
+
+(defun rewrite/continue (defs steps old new)
+  (if (equal new old)
+      new
+      (if (atom steps)
+          new
+          (rewrite/continue defs (cdr steps) new
+            (rewrite/step defs new (car steps))))))
+
+(defun rewrite/steps (defs claim steps)
+  (if (atom steps)
+      claim
+      (rewrite/continue defs (cdr steps) claim
+        (rewrite/step defs claim (car steps)))))
 
 ; page 213
 

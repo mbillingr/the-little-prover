@@ -301,6 +301,10 @@ def to_string(obj):
         return str(obj)
 
 
+def display(obj):
+    print(to_string(obj))
+
+
 #  Environment
 # =============
 
@@ -324,4 +328,26 @@ with open("j-bob.scm") as fd:
 program = analyze(ast)
 evaluate(program)
 
-evaluate("(J-Bob/step (prelude) '(car (cons 'ham '(cheese))) '())")
+display(evaluate("(J-Bob/step (prelude) '(car (cons 'ham '(cheese))) '())"))
+
+display(evaluate("(J-Bob/step (prelude) '(atom '()) '((() (atom '()))))"))
+
+display(
+    evaluate(
+        "(J-Bob/step (prelude)"
+        "   '(atom (cons 'ham '(eggs))) "
+        "   '(((1) (cons 'ham '(eggs))) "
+        "     (() (atom '(ham eggs)))"
+        "))"
+    )
+)
+
+display(
+    evaluate(
+        """
+        (J-Bob/step (prelude) 
+            '(atom (cons a b)) 
+            '((() (atom/cons a b))))
+"""
+    )
+)
