@@ -251,7 +251,16 @@
 
 ; page 207
 
-; page 208
+; page 208 - left
+
+(defun extend-rec (defs def)
+  (if (defun? def)
+      (list-extend defs
+        (defun-c (defun.name def)
+                 (defun.formals def)
+                 (app-c (defun.name def)
+                        (defun.formals def))))
+      defs))
 
 (defun def-contents? (known-defs formals body)
   (if (formals? formals)
@@ -281,6 +290,39 @@
                  (cdr defs))
           'nil)))
 
+; page 208 - right
+
+(defun list2-or-more? (pf)
+  (if (atom pf)
+      'nil
+      (if (atom (cdr pf))
+          'nil
+          't)))
+
+(defun proof? (defs pf)
+  (if (list2-or-more? pf)
+      (if (def? defs (elem1 pf))
+          (if (seed? defs (elem1 pf) (elem2 pf))
+              (steps? (extend-rec defs (elem1 pf))
+                      (cdr (cdr pf)))
+              'nil)
+          'nil)
+      'nil))
+
+(defun proofs? (defs pfs)
+  (if (atom pfs)
+      't
+      (if (proof? defs (car pfs))
+          (proofs? (list-extend defs (elem1 (car pfs)))
+                   (cdr pfs))
+          'nil)))
+
+(defun sub-var (vars args var)
+  (if (atom vars)
+      var
+      (if (equal (car vars) var)
+          (car args)
+          (sub-var (cdr vars) (cdr args) var))))
 
 ; page 209
 
