@@ -249,7 +249,88 @@
               (formals? (cdr vars)))
           'nil)))
 
-; page 207
+; page 207 - left
+
+(defun direction? (dir)
+  (if (natp dir) 't (member? dir '(Q A E))))
+
+(defun path? (path)
+  (if (atom path)
+      't
+      (if (direction? (car path))
+          (path? (cdr path))
+          'nil)))
+
+(defun quoted-exprs? (args)
+  (if (atom args)
+      't
+      (if (quote? (car args))
+          (quoted-exprs? (cdr args))
+          'nil)))
+
+(defun step-args? (defs def args)
+  (if (dethm? def)
+      (if (arity? (dethm.formals def) args)
+          (exprs? defs 'any args)
+          'nil)
+      (if (defun? def)
+          (if (arity? (defun.formals def) args)
+              (exprs? defs 'any args)
+              'nil)
+          (if (rator? def)
+              (if (arity? (rator.formals def) args)
+                  (quoted-exprs? args)
+                  'nil)
+              'nil))))
+
+(defun step-app? (defs app)
+  (step-args? defs
+              (lookup (app.name app) defs)
+              (app.args app)))
+
+; page 207 - right
+
+(defun step? (defs step)
+  (if (path? (elem1 step))
+      (if (app? (elem2 step))
+          (step-app? defs (elem2 step))
+          'nil)
+      'nil))
+
+(defun steps? (defs steps)
+  (if (atom steps)
+      't
+      (if (step? defs (car steps))
+          (steps? defs (cdr steps))
+          'nil)))
+
+(defun induction-scheme-for? (def vars e)
+  (if (defun? def)
+      (if (arity? (defun.formals def) (app.args e))
+          (if (formals? (app.args e))
+              (subset? (app.args e) vars)
+              'nil)
+          'nil)
+      'nil))
+
+(defun induction-scheme? (defs vars e)
+  (if (app? e)
+      (induction-scheme-for?
+        (lookup (app.name e) defs)
+        vars
+        e)
+      'nil))
+
+(defun seed? (defs def seed)
+  (if (equal seed 'nil)
+      't
+      (if (defun? def)
+          (expr? defs (defun.formals def) seed)
+          (if (dethm? def)
+              (induction-scheme? defs
+                                 (dethm.formals def)
+                                 seed)
+              'nil))))
 
 ; page 208 - left
 
@@ -359,7 +440,12 @@
   '((dethm atom/cons (x y)
       (equal (atom (cons x y)) 'nil))
     (dethm car/cons (x y)
-      (equal (car (cons x y)) x))))
+      (equal (car (cons x y)) x))
+    ; todo: more...
+    (dethm size/cdr (x)
+      (if (atom x)
+          't
+          (equal (< (size (car x)) (size x)) 't)))))
     ; todo: the rest...
 
 (defun prelude ()
