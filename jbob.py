@@ -156,6 +156,7 @@ def pythonize(name: str) -> str:
         pyname = "is_" + pyname[:-1]
     pyname = (
         pyname.replace("-", "_")
+        .replace("?", "_p_")
         .replace("/", "_slash_")
         .replace("+", "_plus_")
         .replace("*", "_star_")
