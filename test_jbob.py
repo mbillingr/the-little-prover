@@ -76,8 +76,16 @@ class TestRecess:
             "'(if (if 'x 'y '(z z)) c c)",
         )
 
-    def test_frame_29_simplified(self):
+    def test_frame_29(self):
         assert_same_value(
             "(J-Bob/prove (prelude) '())",
+            "''t",
+        )
+
+    def test_frame_30(self):
+        assert_same_value(
+            """(J-Bob/prove (prelude) 
+                '(((defun pair (x y) (cons x (cons y '())))
+                   nil)))""",
             "''t",
         )

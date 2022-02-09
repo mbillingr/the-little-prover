@@ -630,6 +630,60 @@
 
 ; page 213
 
+(defun rewrite/prove (defs def seed steps)
+  (if (defun? def)
+      (rewrite/steps defs
+        (totality/claim seed def)
+        steps)
+      (if (dethm? def)
+          (rewrite/steps defs
+            (induction/claim defs seed def)
+            steps)
+          (quote-c 'nil))))
+
+(defun rewrite/prove+1 (defs pf e)
+  (if (equal e (quote-c 't))
+      (rewrite/prove defs (elem1 pf) (elem2 pf)
+        (cdr (cdr pf)))
+      e))
+
+(defun rewrite/prove+ (defs pfs)
+  (if (atom pfs)
+      (quote-c 't)
+      (rewrite/prove+1 defs (car pfs)
+        (rewrite/prove+
+          (list-extend defs (elem1 (car pfs)))
+          (cdr pfs)))))
+
+(defun rewrite/define (defs def seed steps)
+  (if (equal (rewrite/prove defs def seed steps)
+             (quote-c 't))
+      (list-extend defs def)
+      defs))
+
+(defun rewrite/define+1 (defs1 defs2 pfs)
+  (if (equal defs1 defs2)
+      defs1
+      (if (atom pfs)
+          defs2
+          (rewrite/define+1 defs2
+            (rewrite/define defs2
+              (elem1 (car pfs))
+              (elem2 (car pfs))
+              (cdr (cdr (car pfs))))
+            (cdr pfs)))))
+
+(defun rewrite/define+ (defs pfs)
+  (if (atom pfs)
+      (defs)
+      (rewrite/define+1 defs
+        (rewrite/define defs
+          (elem1 (car pfs))
+          (elem2 (car pfs))
+          (cdr (cdr (car pfs))))
+        (cdr pfs))))
+
+
 (defun J-Bob/step (defs e steps)
   (if (defs? '() defs)
       (if (expr? defs 'any e)
@@ -640,7 +694,11 @@
       e))
 
 (defun J-Bob/prove (defs pfs)
-  TODO)
+  (if (defs? '() defs)
+      (if (proofs? defs pfs)
+          (rewrite/prove+ defs pfs)
+          (quote-c 'nil))
+      (quote-c 'nil)))
 
 (defun J-Bob/define (defs pfs)
   (if (defs? '() defs)
