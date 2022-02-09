@@ -42,12 +42,17 @@ def analyze(expr):
             raise NotImplementedError(f"{to_string(expr)} (line {line}, column {col})")
 
 
-def analyze_application(f, args):
-    f_exec = analyze(f)
+def analyze_application(fexpr, args):
+    f_exec = analyze(fexpr)
     arg_execs = analyze_args(args)
 
     def the_application(env):
         f = f_exec(env)
+        if not callable(f):
+            line, col = src_pos(fexpr)
+            raise TypeError(
+                f"Attempt to call {f} of type {type(f)} (line {line}, column {col})"
+            )
         args = map(lambda a: a(env), iter(arg_execs))
         return f(*args)
 
