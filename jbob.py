@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import lru_cache
 import keyword
 from typing import Any
 
@@ -76,16 +77,7 @@ def analyze_application(fexpr, args):
     def the_application(env):
         f = f_exec(env)
         args = map(lambda a: a(env), iter(arg_execs))
-        try:
-            return f(*args)
-        except Traceback as e:
-            line, col = src_pos(fexpr)
-            raise Traceback(
-                e.args[0], e.args[1] + f"(line {line}, column {col})"
-            ) from None
-        except Exception as e:
-            line, col = src_pos(fexpr)
-            raise Traceback(e, f"(line {line}, column {col})") from None
+        return f(*args)
 
     return the_application
 
@@ -135,9 +127,13 @@ def analyze_definition(name, params, body):
     local_env = "local_env = env | {" + local_env + "}"
 
     # define functions as actual python functions with name and arguments
-    fndef = f"""def {python_name}({", ".join(param_strs)}):
-                    {local_env}
-                    return body_exec(local_env)"""
+    # caching the results seems feasible, because as far I know at the moment, there are no side-effects in J-Bob
+    fndef = f"""
+@cache 
+def {python_name}({", ".join(param_strs)}):
+    {local_env}
+    return body_exec(local_env)
+"""
 
     def the_definition(env):
         if name in global_env:
@@ -148,7 +144,7 @@ def analyze_definition(name, params, body):
                 f"{name} multiply defined (line {line1}, column {col1}) and (line {line2}, column {col2})"
             )
         glob = {}
-        exec(fndef, {"body_exec": body_exec, "env": env}, glob)
+        exec(fndef, {"body_exec": body_exec, "env": env, "cache": lru_cache}, glob)
         global_env[name] = glob[python_name]
 
     return the_definition
@@ -270,6 +266,9 @@ class Pair:
 
     def __repr__(self):
         return to_string(self)
+
+    def __hash__(self):
+        return hash((self.car, self.cdr))
 
 
 assert Pair(1, 2) == Pair(1, 2)
