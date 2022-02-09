@@ -78,7 +78,67 @@
 (defun dethm.formals (def) (elem2 (untag def)))
 (defun dethm.body (def) (elem3 (untag def)))
 
-; page 205
+; page 205 - left
+
+(defun if-QAE (e) (list3 (if.Q e) (if.A e) (if.E e)))
+(defun QAE-if (es) (if-c (elem1 es) (elem2 es) (elem3 es)))
+
+(defun rator? (name)
+  (member? name '(equal atom car cdr cons natp size + <)))
+
+(defun rator.formals (rator)
+  (if (member? rator '(atom car cdr natp size))
+      '(x)
+      (if (member? rator '(equal cons + <))
+          '(x y)
+          'nil)))
+
+(defun def.name (def)
+  (if (defun? def)
+      (defun.name def)
+      (if (dethm? def)
+          (dethm.name def)
+          def)))
+
+(defun def.formals (def)
+  (if (dethm? def)
+      (dethm.formals def)
+      (if (defun? def)
+          (defun.formals def)
+          '())))
+
+(defun if-c-when-necessary (Q A E)
+  (if (equal A E) A (if-c Q A E)))
+
+(defun conjunction (es)
+  (if (atom es)
+      (quote-c 't)
+      (if (atom (cdr es))
+          (car es)
+          (if-c (car es)
+                (conjunction (cdr es))
+                (quote-c 'nil)))))
+
+(defun implication (es e)
+  (if (atom es)
+      e
+      (if-c (car es)
+            (implication (cdr es) e)
+            (quote-c 't))))
+
+; page 205 - right
+
+(defun args-arity? (def args)
+  (if (dethm? def)
+      'nil
+      (if (defun? def)
+          (arity? (defun.formals def) args)
+          (if (rator? def)
+              (arity? (rator.formals def) args)
+              'nil))))
+
+(defun app-arity? (defs app)
+  (args-arity? (lookup (app.name app) defs) (app.args app)))
 
 (defun lookup (name defs)
   (if (atom defs)
@@ -91,6 +151,9 @@
   (if (var? name)
       (equal (lookup name defs) name)
       'nil))
+
+(defun bound? (var vars)
+  (if (equal vars 'any) 't (member? var vars)))
 
 ; page 206 - left
 
@@ -118,7 +181,64 @@
 (defun expr? (defs vars e)
   (exprs? defs vars (list1 e)))
 
+(defun subset? (xs ys)
+  (if (atom xs)
+      't
+      (if (member? (car xs) ys)
+          (subset? (cdr xs) ys)
+          'nil)))
+
+(defun list-extend (xs x)
+  (if (atom xs)
+      (list1 x)
+      (if (equal (car xs) x)
+          xs
+          (cons (car xs)
+                (list-extend (cdr xs) x)))))
+
+(defun list-union (xs ys)
+  (if (atom ys)
+      xs
+      (list-union (list-extend xs (car ys))
+                  (cdr ys))))
+
 ; page 206 - right
+
+(defun get-arg-from (n args from)
+  (if (atom args)
+      'nil
+      (if (equal n from)
+          (car args)
+          (get-arg from n (cdr args) (+ from '1)))))
+
+(defun get-arg (n args) (get-arg-from n args '1))
+
+(defun set-arg-from (n args y from)
+  (if (atom args)
+      '()
+      (if (equal n from)
+          (cons y (cdr args))
+          (cons (car args)
+                (set-arg-from n (cdr args) y (+ from '1))))))
+
+(defun set-arg (n args y) (set-arg-from n args y '1))
+
+(defun <=len-from (n args from)
+  (if (atom args)
+      'nil
+      (if (equal n from)
+          't
+          (<=len-from n (cdr args) (+ from '1)))))
+
+(defun <=len (n args)
+  (if (< '0 n) (<=len-from n args '1) 'nil))
+
+(defun arity? (vars es)
+  (if (atom vars)
+      (atom es)
+      (if (atom es)
+          'nil
+          (arity? (cdr vars) (cdr es)))))
 
 (defun formals? (vars)
   (if (atom vars)

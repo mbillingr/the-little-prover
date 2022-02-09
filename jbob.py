@@ -128,6 +128,9 @@ def pythonize(name: str) -> str:
         .replace("+", "_plus_")
         .replace("*", "_star_")
         .replace(".", "_dot_")
+        .replace("<", "_lt_")
+        .replace("=", "_eq_")
+        .replace(">", "_gt_")
     )
     if len(pyname) > 1 and pyname[-1] == "_" and pyname[-2] != "_":
         pyname = pyname[:-1]
@@ -157,7 +160,7 @@ sexpr_parser = Lark(
     quote: "'" sexpr
     list: "(" sexpr* ")"    
          
-    SYMBOL: ("A".."Z" | "a".."z" | "0".."9" | "-" | "+" | "/" | "_" | "." | "!" | "?")+
+    SYMBOL: ("A".."Z" | "a".."z" | "0".."9" | "-" | "+" | "/" | "_" | "." | "!" | "?" | "<" | "=" | ">")+
     
     COMMENT: ";" /[^\n]*/ NEWLINE
     %ignore COMMENT
