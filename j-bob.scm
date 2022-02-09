@@ -463,6 +463,13 @@
 
 ; page 210 - left
 
+(defun induction/claim (defs seed def)
+  (if (equal seed 'nil)
+      (dethm.body def)
+      (induction/defun (app.args seed)
+        (dethm.body def)
+        (lookup (app.name seed) defs))))
+
 ; page 210 - right
 
 (defun find-focus-at-direction (dir e)
@@ -751,7 +758,10 @@
       (equal (car (cons x y)) x))
     (dethm cdr/cons (x y)
       (equal (cdr (cons x y)) y))
-    ; todo: more...
+    (dethm equal-same (x)
+      (equal (equal x x) 't))
+    (dethm equal-swap (x y)
+      (equal (equal x y) (equal y x)))
     (dethm if-same (x y)
       (equal (if x y y) y))
     ; todo: more...

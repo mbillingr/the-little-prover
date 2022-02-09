@@ -89,3 +89,66 @@ class TestRecess:
                    nil)))""",
             "''t",
         )
+
+    def test_frame_33(self):
+        assert_same_value(
+            """(J-Bob/prove (prelude) 
+                '(((defun pair (x y) (cons x (cons y '())))
+                   nil)
+                  ((defun first-of (x) (car x))
+                   nil)
+                  ((defun second-of (x) (car (cdr x)))
+                   nil)))""",
+            "''t",
+        )
+
+    def test_frame_34(self):
+        assert_same_value(
+            """(J-Bob/prove (prelude) 
+                '(((defun pair (x y) (cons x (cons y '())))
+                   nil)
+                  ((defun first-of (x) (car x))
+                   nil)
+                  ((defun second-of (x) (car (cdr x)))
+                   nil)
+                  ((dethm first-of-pair (a b) 
+                     (equal (first-of (pair a b)) a))
+                   nil)))""",
+            "'(equal (first-of (pair a b)) a)",
+        )
+
+    def test_frame_35(self):
+        assert_same_value(
+            """(J-Bob/prove (prelude) 
+                '(((defun pair (x y) (cons x (cons y '())))
+                   nil)
+                  ((defun first-of (x) (car x))
+                   nil)
+                  ((defun second-of (x) (car (cdr x)))
+                   nil)
+                  ((dethm first-of-pair (a b) 
+                     (equal (first-of (pair a b)) a))
+                   nil
+                   ((1 1) (pair a b)))))""",
+            "'(equal (first-of (cons a (cons b '()))) a)",
+        )
+
+    def test_frame_38(self):
+        assert_same_value(
+            """(J-Bob/prove (prelude) 
+                '(((defun pair (x y) (cons x (cons y '())))
+                   nil)
+                  ((defun first-of (x) (car x))
+                   nil)
+                  ((defun second-of (x) (car (cdr x)))
+                   nil)
+                  ((dethm first-of-pair (a b) 
+                     (equal (first-of (pair a b)) a))
+                   nil
+                   ((1 1) (pair a b))
+                   ((1) (first-of (cons a (cons b '()))))
+                   ((1) (car/cons a (cons b '())))
+                   (() (equal-same a))
+                   )))""",
+            "''t",
+        )
