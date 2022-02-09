@@ -764,11 +764,28 @@
       (equal (equal x y) (equal y x)))
     (dethm if-same (x y)
       (equal (if x y y) y))
-    ; todo: more...
+    (dethm if-true (x y)
+      (equal (if 't x y) x))
+    (dethm if-false (x y)
+      (equal (if 'nil x y) y))
+    (dethm if-nest-E (x y z)
+      (if x 't (equal (if x y z) z)))
+    (dethm if-nest-A (x y z)
+      (if x (equal (if x y z) y) 't))
+    (dethm cons/car+cdr (x)
+      (if (atom x)
+          't
+          (equal (cons (car x) (cdr x)) x)))
+    (dethm natp/size (x)
+      (equal (natp (size x)) 't))
+    (dethm size/car (x)
+      (if (atom x)
+          't
+          (equal (< (size (car x)) (size x)) 't)))
     (dethm size/cdr (x)
       (if (atom x)
           't
-          (equal (< (size (car x)) (size x)) 't)))))
+          (equal (< (size (cdr x)) (size x)) 't)))))
     ; todo: the rest...
 
 (defun prelude ()
