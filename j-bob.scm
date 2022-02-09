@@ -424,7 +424,42 @@
 (defun sub-e (vars args e)
   (elem1 (sub-es vars args (list1 e))))
 
-; page 209
+; page 209 - left
+
+(defun exprs-recs (f es)
+  (if (atom es)
+      '()
+      (if (var? (car es))
+          (exprs-recs f (cdr es))
+          (if (quote? (car es))
+              (exprs-recs f (cdr es))
+              (if (if? (car es))
+                  (list-union (exprs-recs f (if-QAE (car es)))
+                              (exprs-recs f (cdr es)))
+                  (if (equal (app.name (car es)) f)
+                      (list-union (list1 (car es))
+                                  (list-union (exprs-recs f (app.args (car es)))
+                                              (exprs-recs f (cdr es))))
+                      (list-union (exprs-recs f (app.args (car es)))
+                                  (exprs-recs f (cdr es)))))))))
+
+(defun expr-recs (f e)
+  (exprs-recs f (list1 e)))
+
+; page 209 - right
+
+(defun totality/claim (meas def)
+  (if (equal meas 'nil)
+      (if (equal (expr-recs (defun.name def)
+                            (defun.body def))
+                 '())
+          (quote-c 't)
+          (quote-c 'nil))
+      (if-c (app-c 'natp (list1 meas))
+            (totality/if meas (defun.name def)
+              (defun.formals def)
+              (defun.body def))
+            (quote-c 'nil))))
 
 ; page 210 - left
 
