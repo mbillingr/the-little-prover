@@ -319,5 +319,121 @@ class TestChapter02:
                     (if (equal (car a) (cdr a)) 'hominy 'grits) 
                     (if (equal (cdr (car a)) '(hash browns)) 
                         (cons 'ketchup (cons (car (car a)) '(hash browns))) 
-                        (cons 'mustard (car a))))"""
+                        (cons 'mustard (car a))))""",
         )
+
+
+class TestChapter03:
+    def test_frame_05(self, chapter03):
+        assert_functions_defined("(chapter03)", "pair", "first-of", "second-of")
+
+    def test_frame_06(self, chapter03):
+        assert_theorems_proved("(chapter03)", "first-of-pair")
+
+    def test_frame_17(self, chapter03):
+        assert_theorems_proved("(chapter03)", "second-of-pair")
+
+    def test_frame_27(self, chapter03):
+        assert_functions_defined("(chapter03)", "in-pair?")
+
+    def test_frame_28(self, chapter03):
+        assert_theorems_proved("(chapter03)", "in-first-of-pair")
+
+    def proof_wip_template(self):
+        assert_same_value(
+            """(J-Bob/prove (chapter03)
+                  '(((dethm name (args)
+                        (body))
+                     nil)
+                ))""",
+            "''t",
+        )
+
+    @pytest.fixture()
+    def chapter03(self):
+        evaluate(
+            """
+(defun chapter03 ()
+    (J-Bob/define (prelude)
+        '(((defun pair (x y) 
+             (cons x (cons y '())))
+           nil)
+           
+          ((defun first-of (x) 
+             (car x))
+           nil)
+           
+          ((defun second-of (x) 
+             (car (cdr x)))
+           nil)
+           
+          ((dethm first-of-pair (a b) 
+             (equal (first-of (pair a b)) a))
+           nil
+           ((1 1) (pair a b))
+           ((1) (first-of (cons a (cons b '()))))
+           ((1) (car/cons a (cons b '())))
+           (() (equal-same a)))
+           
+          ((dethm second-of-pair (a b)
+             (equal (second-of (pair a b)) b))
+           nil
+           ((1 1) (pair a b))
+           ((1) (second-of (cons a (cons b '()))))
+           ((1 1) (cdr/cons a (cons b '())))
+           ((1) (car/cons b '()))
+           (() (equal-same b))
+           )
+           
+          ((defun in-pair? (xs)
+             (if (equal (first-of xs) '?) 
+                 't 
+                 (equal (second-of xs) '?)))
+           nil)
+           
+          ((dethm in-first-of-pair (b)
+             (equal (in-pair? (pair '? b)) 't))
+           nil
+           ((1 1) (pair '? b))
+           ((1) (in-pair? (cons '? (cons b '()))))
+           ((1 Q 1) (first-of (cons '? (cons b '()))))
+           ((1 Q 1) (car/cons '? (cons b '())))
+           ((1 Q) (equal-same '?))
+           ((1) (if-true 't (equal (second-of (cons '? (cons b '()))) '?)))
+           (() (equal-same 't)))
+)))"""
+        )
+        yield
+        del global_env["chapter03"]
+
+    @pytest.fixture()
+    def first_of_pair(self):
+        evaluate(
+            """(defun pairs ()
+                (J-Bob/define (pairs)
+                  '(((dethm first-of-pair (a b) 
+                       (equal (first-of (pair a b)) a))
+                     nil
+                     ((1 1) (pair a b))
+                     ((1) (first-of (cons a (cons b '()))))
+                     ((1) (car/cons a (cons b '())))
+                     (() (equal-same a))))))"""
+        )
+        yield
+        del global_env["pairs"]
+
+
+def assert_functions_defined(expr, *fnames):
+    assert_defined("defun", expr, fnames)
+
+
+def assert_theorems_proved(expr, *fnames):
+    assert_defined("dethm", expr, fnames)
+
+
+def assert_defined(definition_kind, expr, fnames):
+    defs = map(list, evaluate(expr))
+    defuns = filter(lambda x: x[0] == definition_kind, defs)
+    defun_names = map(lambda x: x[1], defuns)
+    undefined_names = set(fnames).difference(defun_names)
+    assert not undefined_names, f"Undefined: {undefined_names}"
