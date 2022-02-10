@@ -290,3 +290,16 @@ class TestRecess:
                         (equal (memb? (remb xs)) 'nil)
                         't))""",
         )
+
+
+class TestChapter02:
+    def test_frame_11pp(self):
+        assert_same_value(
+            """(J-Bob/step (prelude) 
+                '(if (if (equal a 't) (if (equal 'nil 'nil) a b) (equal 'or (cons 'black '(coffee)))) c c)
+                '(((Q E 2) (cons 'black '(coffee)))
+                  ((Q A Q) (equal 'nil 'nil))
+                  ((Q A) (if-true a b))
+                  ((Q A) (equal-if a 't))))""",
+            "'(if (if (equal a 't) 't (equal 'or '(black coffee))) c c)",
+        )

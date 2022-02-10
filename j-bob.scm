@@ -823,6 +823,8 @@
       (if (atom x)
           't
           (equal (cons (car x) (cdr x)) x)))
+    (dethm equal-if (x y)
+      (if (equal x y) (equal x y) 't))
     (dethm natp/size (x)
       (equal (natp (size x)) 't))
     (dethm size/car (x)
