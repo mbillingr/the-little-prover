@@ -303,3 +303,21 @@ class TestChapter02:
                   ((Q A) (equal-if a 't))))""",
             "'(if (if (equal a 't) 't (equal 'or '(black coffee))) c c)",
         )
+
+    def test_frame_60pp(self):
+        assert_same_value(
+            """(J-Bob/step (prelude) 
+                '(if (atom (car a)) 
+                     (if (equal (car a) (cdr a)) 'hominy 'grits) 
+                     (if (equal (cdr (car a)) '(hash browns)) 
+                         (cons 'ketchup (car a)) 
+                         (cons 'mustard (car a))))
+                '(((E A 2) (cons/car+cdr (car a)))
+                  ((E A 2 2) (equal-if (cdr (car a)) '(hash browns)))
+                ))""",
+            """'(if (atom (car a)) 
+                    (if (equal (car a) (cdr a)) 'hominy 'grits) 
+                    (if (equal (cdr (car a)) '(hash browns)) 
+                        (cons 'ketchup (cons (car (car a)) '(hash browns))) 
+                        (cons 'mustard (car a))))"""
+        )
