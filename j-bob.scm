@@ -487,6 +487,29 @@
 
 ; page 210 - left
 
+(defun induction/prems (vars claim apps)
+  (if (atom apps)
+      '()
+      (cons (sub-e vars (app.args (car apps)) claim)
+            (induction/prems vars claim (cdr apps)))))
+
+(defun induction/if (vars claim f e)
+  (if (if? e)
+      (implication
+        (induction/prems vars claim
+          (expr-recs f (if.Q e)))
+        (if-c-when-necessary (if.Q e)
+          (induction/if vars claim f (if.A e))
+          (induction/if vars claim f (if.E e))))
+      (implication
+        (induction/prems vars claim
+          (expr-recs f e))
+        claim)))
+
+(defun induction/defun (vars claim def)
+  (induction/if vars claim (defun.name def)
+    (sub-e (defun.formals def) vars (defun.body def))))
+
 (defun induction/claim (defs seed def)
   (if (equal seed 'nil)
       (dethm.body def)
