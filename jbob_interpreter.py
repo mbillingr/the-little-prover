@@ -2,7 +2,7 @@ from functools import lru_cache
 import keyword
 
 from jbob_parser import parse, src_pos
-from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair
+from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, to_string
 
 
 global_env = {}  # runtime store of language-defined functions
