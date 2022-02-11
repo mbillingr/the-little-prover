@@ -200,14 +200,13 @@ def run_vm(code):
     ip = 0
     stack = []
     val = None
-    arg_offset = 0
-    trace = []
+    args = []
     while ip < len(code):
         match code[ip]:
             case ("CONSTANT", idx):
                 val = global_constants[idx]
             case ("REF", idx):
-                val = stack[arg_offset + idx]
+                val = args[idx]
             case ("JUMP", offset):
                 ip += offset
             case ("JUMP-FALSE", offset):
@@ -235,16 +234,28 @@ def run_vm(code):
                 # use > because arguments on the stack are reversed
                 val = "t" if num(stack.pop()) > num(stack.pop()) else "nil"
             case ("CALL", func, nargs):
-                trace.append(func)
-                stack.append(("FRAME", code, ip, arg_offset, nargs))
-                arg_offset = len(stack) - nargs - 1
+                TC = False
+                try:
+                    if code[ip+1] == ("RETURN",):
+                        TC = True
+                except IndexError:
+                    pass
+
+                frame = ("FRAME", code, ip, args)
+
+                if nargs > 0:
+                    args = stack[-nargs:]
+                    stack = stack[:-nargs]
+                else:
+                    args = []
+
+                if not TC:
+                    stack.append(frame)
+
                 code = global_functions[func].instructions
                 ip = -1
             case ("RETURN",):
-                trace.pop()
-                _, code, ip, arg_offset, nargs = stack.pop()
-                if nargs > 0:
-                    stack = stack[:-nargs]
+                _, code, ip, args = stack.pop()
             case op:
                 raise NotImplementedError(op)
         ip += 1

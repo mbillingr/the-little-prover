@@ -20,7 +20,7 @@ program = compile(ast)
 print(program)
 print(evaluate(program))
 
-# print(evaluate("(list1 '42)"))
+print(evaluate("(list1 '42)"))
 
 print(evaluate("(< '6 '7)"))
 
