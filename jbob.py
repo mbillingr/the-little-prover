@@ -14,9 +14,9 @@ program = analyze(ast)
 evaluate(program)
 
 
-from jbob_compiler import compile, evaluate
-program = compile(ast)
-print(program)
-print(evaluate(program))
-
-print(evaluate("(list3? '(0 1 2 3))"))
+#from jbob_compiler import compile, evaluate
+#program = compile(ast)
+#print(program)
+#print(evaluate(program))
+#
+#print(evaluate("(list3? '(0 1 2 3))"))
