@@ -14,8 +14,7 @@ global_env = {}
 
 
 def evaluate(expr, env=None):
-    if env is None:
-        env = global_env
+    env = env or {}
     if isinstance(expr, str):
         expr = analyze(parse(expr))
     return expr(env)
@@ -70,12 +69,11 @@ class Traceback(RuntimeError):
 
 
 def analyze_application(fexpr, args):
-    f_exec = analyze(fexpr)
     arg_execs = analyze_args(args)
 
     @AddErrorContext(fexpr)
     def the_application(env):
-        f = f_exec(env)
+        f = global_env[fexpr]
         args = map(lambda a: a(env), iter(arg_execs))
         return f(*args)
 
