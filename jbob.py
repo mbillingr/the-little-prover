@@ -22,7 +22,7 @@ print(evaluate(program))
 
 print(evaluate("(list1 '42)"))
 
-print(evaluate("(< '6 '7)"))
+print(evaluate("(list1? '(1 2))"))
 
 
 def undefine(name):

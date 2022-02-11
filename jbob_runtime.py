@@ -23,6 +23,9 @@ class Pair:
     def __hash__(self):
         return hash((self.car, self.cdr))
 
+    def __len__(self):
+        return sum(1 for _ in self)
+
 
 assert Pair(1, 2) == Pair(1, 2)
 

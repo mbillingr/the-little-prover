@@ -95,9 +95,8 @@ def compile_if(q, a, e, lexical_env):
 
 def compile_definition(name, params, body, lexical_env):
     assert not lexical_env, "Nested function definitions are not allowed"
-    header = Code()
-    for p in params:
-        header = header.append(Code.init_arg(p))
+
+    header = Code.init_args(params)
 
     lexical_env = tuple(params)
 
@@ -144,8 +143,8 @@ class Code:
         return Code([("PUSH-ARG",)])
 
     @staticmethod
-    def init_arg(name):
-        return Code()
+    def init_args(params):
+        return Code([("POP-ARGS", len(params))])
 
     @staticmethod
     def define(name, body):
@@ -196,6 +195,19 @@ class Code:
         return out
 
 
+BUILTINS = {
+    "num": num,
+    "atom": atom,
+    "cons": cons,
+    "car": car,
+    "cdr": cdr,
+    "equal": lambda x, y: "t" if x == y else "nil",
+    "natp": lambda x: "t" if isinstance(x, int) and x >= 0 else "nil",
+    "+": lambda x, y: num(x) + num(y),
+    "<": lambda x, y: "t" if num(x) < num(y) else "nil",
+}
+
+
 def run_vm(code):
     ip = 0
     stack = []
@@ -214,6 +226,12 @@ def run_vm(code):
                     ip += offset
             case ("PUSH-ARG",):
                 stack.append(val)
+            case ("POP-ARGS", nargs):
+                frame = stack.pop()
+                k = len(stack) - nargs
+                args = stack[k:]
+                stack = stack[:k]
+                stack.append(frame)
             case ("CALL", "atom", 1):
                 val = atom(stack.pop())
             case ("CALL", "car", 1):
@@ -236,21 +254,17 @@ def run_vm(code):
             case ("CALL", func, nargs):
                 TC = False
                 try:
-                    if code[ip+1] == ("RETURN",):
+                    if code[ip + 1] == ("RETURN",):
                         TC = True
                 except IndexError:
                     pass
 
                 frame = ("FRAME", code, ip, args)
 
-                if nargs > 0:
-                    args = stack[-nargs:]
-                    stack = stack[:-nargs]
-                else:
-                    args = []
-
                 if not TC:
                     stack.append(frame)
+                else:
+                    raise NotImplementedError("In TCs the frame is not in the right position...")
 
                 code = global_functions[func].instructions
                 ip = -1
