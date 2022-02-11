@@ -216,12 +216,12 @@ def src_pos(obj):
 
 class TreeToSexpr(Transformer):
     @v_args(meta=True)
-    def quote(self, q, meta):
+    def quote(self, meta, q):
         (q,) = q
-        return self.list(["quote", q], meta)
+        return self.list(meta, ["quote", q])
 
     @v_args(meta=True)
-    def symbol(self, s, meta):
+    def symbol(self, meta, s):
         (s,) = s
         name = s[:]
         SRCMAP[id(name)] = ((meta.line, meta.column), (meta.end_line, meta.end_column))
@@ -232,7 +232,7 @@ class TreeToSexpr(Transformer):
         return int(n)
 
     @v_args(meta=True)
-    def list(self, l, meta):
+    def list(self, meta, l):
         out = ()
         for x in l[::-1]:
             out = cons(x, out)
