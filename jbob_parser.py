@@ -1,6 +1,18 @@
+import lark
 from lark import Lark, Transformer, v_args
 
 from jbob_runtime import cons
+
+
+if int(lark.__version__.split(".")[0]) < 1:
+
+    def with_meta(func):
+        return v_args(meta=True)(lambda self, x, meta: func(self, meta, x))
+
+else:
+
+    def with_meta(func):
+        return v_args(meta=True)(func)
 
 
 def parse(src):
@@ -42,12 +54,12 @@ def src_pos(obj):
 
 
 class TreeToSexpr(Transformer):
-    @v_args(meta=True)
+    @with_meta
     def quote(self, meta, q):
         (q,) = q
-        return self.list(meta, ["quote", q])
+        return self._list(meta, ["quote", q])
 
-    @v_args(meta=True)
+    @with_meta
     def symbol(self, meta, s):
         (s,) = s
         name = s[:]
@@ -58,8 +70,11 @@ class TreeToSexpr(Transformer):
         (n,) = n
         return int(n)
 
-    @v_args(meta=True)
+    @with_meta
     def list(self, meta, l):
+        return self._list(meta, l)
+
+    def _list(self, meta, l):
         out = ()
         for x in l[::-1]:
             out = cons(x, out)
