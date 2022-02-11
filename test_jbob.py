@@ -1,5 +1,5 @@
 import pytest
-from jbob import evaluate, global_env
+from jbob import evaluate, undefine
 
 
 def assert_same_value(expr1, expr2):
@@ -174,7 +174,7 @@ class TestRecess:
                      (() (equal-same a))))))"""
         )
         yield
-        del global_env["prelude+first-of-pair"]
+        undefine("prelude+first-of-pair")
 
     def test_frame_45(self, frame42):
         assert_same_value(
@@ -275,7 +275,7 @@ class TestRecess:
                 )))"""
         )
         yield
-        del global_env["prelude+memb?+remb"]
+        undefine("prelude+memb?+remb")
 
     def test_frame_61(self, frame55):
         assert_same_value(
@@ -404,7 +404,7 @@ class TestChapter03:
 )))"""
         )
         yield
-        del global_env["chapter03"]
+        undefine("chapter03")
 
     @pytest.fixture()
     def first_of_pair(self):
@@ -420,7 +420,7 @@ class TestChapter03:
                      (() (equal-same a))))))"""
         )
         yield
-        del global_env["pairs"]
+        undefine("pairs")
 
 
 def assert_functions_defined(expr, *fnames):
