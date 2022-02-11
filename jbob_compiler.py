@@ -21,7 +21,7 @@ def evaluate(expr):
     global_constants += expr.constants
     global_functions |= expr.functions
 
-    return run_vm(expr.code)
+    return run_vm(expr.instructions)
 
 
 def compile(expr, lexical_env=()):
@@ -58,14 +58,14 @@ def compile_sequence(exprs, lexical_env):
 
 
 def compile_application(fname, args, lexical_env):
-    compiled_args = compile_args(args, lexical_env)
+    compiled_args = list(compile_args(args, lexical_env))
 
     code = Code()
     for i, ca in enumerate(compiled_args):
         code = code.append(ca)
         code = code.append(Code.set_arg(i))
 
-    return code.append(Code.call(fname))
+    return code.append(Code.call(fname, len(compiled_args)))
 
 
 def compile_args(args, lexical_env):
@@ -75,7 +75,7 @@ def compile_args(args, lexical_env):
 
 
 def compile_reference(name, lexical_env):
-    idx = lexical_env[::-1].index(name)
+    idx = lexical_env.index(name)
     return Code.reference(idx)
 
 
@@ -99,7 +99,7 @@ def compile_definition(name, params, body, lexical_env):
     for p in params:
         header = header.append(Code.init_arg(p))
 
-    lexical_env = lexical_env + tuple(params)
+    lexical_env = tuple(params)
 
     compiled_body = header.append(compile(body, lexical_env)).append(Code.return_())
 
@@ -110,10 +110,10 @@ class Code:
     def __init__(self, code=None, constants=None, functions=None):
         self.constants = constants or []
         self.functions = functions or {}
-        self.code = code or []
+        self.instructions = code or []
 
     def length(self):
-        return len(self.code)
+        return len(self.instructions)
 
     @staticmethod
     def constant(value):
@@ -136,8 +136,8 @@ class Code:
         return Code([("REF", name)])
 
     @staticmethod
-    def call(name):
-        return Code([("CALL", name)])
+    def call(name, nargs):
+        return Code([("CALL", name, nargs)])
 
     @staticmethod
     def set_arg(i):
@@ -151,14 +151,14 @@ class Code:
     def define(name, body):
         assert not body.functions, "Nested functions are not allowed"
         constants = body.constants
-        body = Code(body.code)
+        body = Code(body.instructions)
         return Code(constants=constants, functions={name: body})
 
     def append(self, other):
         const_offset = len(self.constants)
         other = other.add_constant_offset(const_offset)
         return Code(
-            self.code + other.code,
+            self.instructions + other.instructions,
             self.constants + other.constants,
             self.functions | other.functions,
         )
@@ -166,7 +166,7 @@ class Code:
     def add_constant_offset(self, offset):
         code = [
             ("CONSTANT", op[1] + offset) if op[0] == "CONSTANT" else op
-            for op in self.code
+            for op in self.instructions
         ]
         functions = {
             name: body.add_constant_offset(offset)
@@ -182,7 +182,7 @@ class Code:
         for name, body in self.functions.items():
             functions.append(f"\n{name}:\n{body}\n")
         functions = "".join(functions)
-        code = "\n".join(map(str, self.code))
+        code = "\n".join(map(str, self.instructions))
 
         out = ""
         if constants:
@@ -200,38 +200,51 @@ def run_vm(code):
     ip = 0
     stack = []
     val = None
-    args = []
+    arg_offset = 0
+    trace = []
     while ip < len(code):
         match code[ip]:
             case ("CONSTANT", idx):
                 val = global_constants[idx]
             case ("REF", idx):
-                val = args[-1 - idx]
+                val = stack[arg_offset + idx]
             case ("JUMP", offset):
                 ip += offset
             case ("JUMP-FALSE", offset):
                 if val == "nil":
                     ip += offset
             case ("PUSH-ARG",):
-                args.append(val)
-            case ("CALL", "atom"):
-                val = atom(args.pop())
-            case ("CALL", "car"):
-                val = car(args.pop())
-            case ("CALL", "cdr"):
-                val = cdr(args.pop())
-            case ("CALL", "cons"):
-                second = args.pop()
-                val = cons(args.pop(), second)
-            case ("CALL", "equal"):
-                val = "t" if args.pop() == args.pop() else "nil"
-            case ("CALL", func):
-                stack.append(("STATE", code, ip, len(args)))
-                code = global_functions[func].code
+                stack.append(val)
+            case ("CALL", "atom", 1):
+                val = atom(stack.pop())
+            case ("CALL", "car", 1):
+                val = car(stack.pop())
+            case ("CALL", "cdr", 1):
+                val = cdr(stack.pop())
+            case ("CALL", "cons", 2):
+                second = stack.pop()
+                val = cons(stack.pop(), second)
+            case ("CALL", "equal", 2):
+                val = "t" if stack.pop() == stack.pop() else "nil"
+            case ("CALL", "natp", 1):
+                x = stack.pop()
+                val = "t" if isinstance(x, int) and x >= 0 else "nil"
+            case ("CALL", "+", 2):
+                val = num(stack.pop()) + num(stack.pop())
+            case ("CALL", "<", 2):
+                # use > because arguments on the stack are reversed
+                val = "t" if num(stack.pop()) > num(stack.pop()) else "nil"
+            case ("CALL", func, nargs):
+                trace.append(func)
+                stack.append(("FRAME", code, ip, arg_offset, nargs))
+                arg_offset = len(stack) - nargs - 1
+                code = global_functions[func].instructions
                 ip = -1
             case ("RETURN",):
-                _, code, ip, nargs = stack.pop()
-                args = args[:nargs]
+                trace.pop()
+                _, code, ip, arg_offset, nargs = stack.pop()
+                if nargs > 0:
+                    stack = stack[:-nargs]
             case op:
                 raise NotImplementedError(op)
         ip += 1

@@ -13,9 +13,17 @@ with open("j-bob.scm") as fd:
 program = analyze(ast)
 evaluate(program)
 
-from jbob_compiler import compile, evaluate
+
+from jbob_compiler import compile, evaluate, global_functions
+
 program = compile(ast)
 print(program)
 print(evaluate(program))
 
-print(evaluate("(list3? '(0 1 2 3))"))
+# print(evaluate("(list1 '42)"))
+
+print(evaluate("(< '6 '7)"))
+
+
+def undefine(name):
+    del global_functions[name]
