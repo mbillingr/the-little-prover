@@ -24,23 +24,23 @@ def evaluate(expr):
     return run_vm(expr.instructions)
 
 
-def compile(expr, lexical_env=()):
+def compile(expr, lexical_env=(), tail=False):
     match expr:
         case Pair("quote", Pair(x, ())):
             return compile_quotation(x, lexical_env)
         case Pair("defun", Pair(name, Pair(args, Pair(body, ())))):
             return compile_definition(name, args, body, lexical_env)
         case Pair("if", Pair(q, Pair(a, Pair(e, ())))):
-            return compile_if(q, a, e, lexical_env)
+            return compile_if(q, a, e, lexical_env, tail)
         case Pair("quote" | "defun" | "if", _):
             line, col = src_pos(expr)
             raise SyntaxError(f"{to_string(expr)} (line {line}, column {col})")
         case Pair(f, args):
-            return compile_application(f, args, lexical_env)
+            return compile_application(f, args, lexical_env, tail)
         case str(symbol):
             return compile_reference(symbol, lexical_env)
         case list([*x]):
-            return compile_sequence(x, lexical_env)
+            return compile_sequence(x, lexical_env, tail)
         case _:
             line, col = src_pos(expr)
             raise NotImplementedError(f"{to_string(expr)} (line {line}, column {col})")
@@ -50,27 +50,34 @@ def compile_quotation(value, _lexical_env):
     return Code.constant(value)
 
 
-def compile_sequence(exprs, lexical_env):
+def compile_sequence(exprs, lexical_env, tail):
     code = Code()
-    for x in exprs:
-        code = code.append(compile(x, lexical_env))
-    return code
+    for x in exprs[:-1]:
+        code = code.append(compile(x, lexical_env, tail=False))
+    return code.append(compile(exprs[-1], lexical_env, tail))
 
 
-def compile_application(fname, args, lexical_env):
+def compile_application(fname, args, lexical_env, tail):
     compiled_args = list(compile_args(args, lexical_env))
 
     code = Code()
     for ca in compiled_args:
         code = code.append(Code.set_arg(ca))
 
-    return code.append(Code.call(fname, len(compiled_args)))
+    if fname in UNARY_BUILTINS:
+        return code.append(Code.unop(fname))
+    elif fname in BINARY_BUILTINS:
+        return code.append(Code.binop(fname))
+    elif tail:
+        return code.append(Code.tailcall(fname))
+    else:
+        return code.append(Code.call(fname))
 
 
 def compile_args(args, lexical_env):
     if is_null(args):
         return args
-    return cons(compile(car(args), lexical_env), compile_args(cdr(args), lexical_env))
+    return cons(compile(car(args), lexical_env, tail=False), compile_args(cdr(args), lexical_env))
 
 
 def compile_reference(name, lexical_env):
@@ -78,10 +85,10 @@ def compile_reference(name, lexical_env):
     return Code.reference(idx)
 
 
-def compile_if(q, a, e, lexical_env):
-    qc = compile(q, lexical_env)
-    ac = compile(a, lexical_env)
-    ec = compile(e, lexical_env)
+def compile_if(q, a, e, lexical_env, tail):
+    qc = compile(q, lexical_env, tail=False)
+    ac = compile(a, lexical_env, tail)
+    ec = compile(e, lexical_env, tail)
 
     code = qc
     code = code.append(Code.jump_not(1 + ac.length()))
@@ -99,7 +106,7 @@ def compile_definition(name, params, body, lexical_env):
 
     lexical_env = tuple(params)
 
-    compiled_body = header.append(compile(body, lexical_env)).append(Code.return_())
+    compiled_body = header.append(compile(body, lexical_env, tail=True)).append(Code.return_())
 
     return Code.define(name, compiled_body)
 
@@ -134,8 +141,20 @@ class Code:
         return Code([("REF", name)])
 
     @staticmethod
-    def call(name, nargs):
-        return Code([("CALL", name, nargs)])
+    def unop(name):
+        return Code([("UNARY-OP", name)])
+
+    @staticmethod
+    def binop(name):
+        return Code([("BINARY-OP", name)])
+
+    @staticmethod
+    def call(name):
+        return Code([("CALL", name)])
+
+    @staticmethod
+    def tailcall(name):
+        return Code([("TAIL-CALL", name)])
 
     @staticmethod
     def set_arg(arg_code):
@@ -197,14 +216,17 @@ class Code:
         return out
 
 
-BUILTINS = {
+UNARY_BUILTINS = {
     "num": num,
     "atom": atom,
-    "cons": cons,
     "car": car,
     "cdr": cdr,
-    "equal": lambda x, y: "t" if x == y else "nil",
     "natp": lambda x: "t" if isinstance(x, int) and x >= 0 else "nil",
+}
+
+BINARY_BUILTINS = {
+    "cons": cons,
+    "equal": lambda x, y: "t" if x == y else "nil",
     "+": lambda x, y: num(x) + num(y),
     "<": lambda x, y: "t" if num(x) < num(y) else "nil",
 }
@@ -235,39 +257,21 @@ def run_vm(code):
                 args = []
             case ("RESTORE", "args"):
                 args = stack.pop()
-            case ("CALL", "atom", 1):
-                val = atom(args.pop())
-            case ("CALL", "car", 1):
-                val = car(args.pop())
-            case ("CALL", "cdr", 1):
-                val = cdr(args.pop())
-            case ("CALL", "cons", 2):
-                second = args.pop()
-                val = cons(args.pop(), second)
-            case ("CALL", "equal", 2):
-                val = "t" if args.pop() == args.pop() else "nil"
-            case ("CALL", "natp", 1):
-                x = args.pop()
-                val = "t" if isinstance(x, int) and x >= 0 else "nil"
-            case ("CALL", "+", 2):
-                val = num(args.pop()) + num(args.pop())
-            case ("CALL", "<", 2):
-                # use > because arguments on the stack are reversed.
-                # This depends on Python's evaluation order
-                val = "t" if num(args.pop()) > num(args.pop()) else "nil"
-            case ("CALL", func, nargs):
-                TC = False
-                try:
-                    if code[ip + 1] == ("RETURN",):
-                        TC = True
-                except IndexError:
-                    pass
-
-                if not TC:
-                    stack.append(return_point)
-                    stack.append(code)
-                    stack.append(env)
-                    return_point = ip
+            case ("UNARY-OP", name):
+                val = UNARY_BUILTINS[name](args.pop())
+            case ("BINARY-OP", name):
+                b = args.pop()
+                a = args.pop()
+                val = BINARY_BUILTINS[name](a, b)
+            case ("TAIL-CALL", func):
+                env, args = args, []
+                code = global_functions[func].instructions
+                ip = -1
+            case ("CALL", func):
+                stack.append(return_point)
+                stack.append(code)
+                stack.append(env)
+                return_point = ip
 
                 env, args = args, []
                 code = global_functions[func].instructions
