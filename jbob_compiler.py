@@ -130,10 +130,6 @@ class Code:
         return Code([("CONSTANT", 0)], [value])
 
     @staticmethod
-    def return_():
-        return Code([("RETURN",)])
-
-    @staticmethod
     def jump(offset):
         return Code([("JUMP", offset)])
 
@@ -154,8 +150,20 @@ class Code:
         return Code([("BINARY-OP", name)])
 
     @staticmethod
+    def return_():
+        return Code([("RETURN",)])
+
+    @staticmethod
     def call(name):
-        return Code([("CALL", name)])
+        return Code(
+            [
+                ("SAVE", "return_point"),
+                ("SAVE", "env"),
+                ("CALL", name),
+                ("RESTORE", "env"),
+                ("RESTORE", "return_point"),
+            ]
+        )
 
     @staticmethod
     def tailcall(name):
@@ -274,8 +282,16 @@ def run_vm(code):
             case ("SAVE", "args"):
                 stack.append(args)
                 args = []
+            case ("SAVE", "env"):
+                stack.append(env)
+            case ("SAVE", "return_point"):
+                stack.append(return_point)
             case ("RESTORE", "args"):
                 args = stack.pop()
+            case ("RESTORE", "env"):
+                env = stack.pop()
+            case ("RESTORE", "return_point"):
+                return_point = stack.pop()
             case ("UNARY-OP", name):
                 val = UNARY_BUILTINS[name](args.pop())
             case ("BINARY-OP", name):
@@ -287,19 +303,13 @@ def run_vm(code):
                 code = global_functions[func].instructions
                 ip = -1
             case ("CALL", func):
-                stack.append(return_point)
-                stack.append(code)
-                stack.append(env)
-                return_point = ip
+                return_point = ip, code
 
                 env, args = args, []
                 code = global_functions[func].instructions
                 ip = -1
             case ("RETURN",):
-                ip = return_point
-                env = stack.pop()
-                code = stack.pop()
-                return_point = stack.pop()
+                ip, code = return_point
             case _op:
                 raise NotImplementedError(_op)
         ip += 1
