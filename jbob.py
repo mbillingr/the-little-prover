@@ -17,7 +17,7 @@ evaluate(program)
 from jbob_compiler import compile, evaluate, global_functions, optimize
 
 program = compile(ast)
-# program = optimize(program)
+program = optimize(program)
 # print(program)
 print(evaluate(program))
 

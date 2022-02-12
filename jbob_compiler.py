@@ -323,6 +323,8 @@ def run_vm(code):
 def optimize(code):
     n_ops0 = code.total_instructions()
 
+    code = insert_labels(code)
+
     code = remove_redundant_saves(code)
 
     n_ops = code.total_instructions()
@@ -330,14 +332,64 @@ def optimize(code):
         f"Optimize redundant stapck ops: {n_ops0 - n_ops} instructions removed ({n_ops} remaining)"
     )
 
+    code = resolve_labels(code)
+
     return code
+
+
+def insert_labels(code):
+    functions = {f: insert_labels(c) for f, c in code.functions.items()}
+
+    jump_targets = {}
+    for i, op in enumerate(code.instructions, start=1):
+        match op:
+            case ("JUMP", ofs) | ("JUMP-FALSE", ofs):
+                jump_targets[i + ofs] = f"label-{i+ofs}"
+
+    instructions = []
+    for i, op in enumerate(code.instructions):
+        if i in jump_targets:
+            instructions.append(jump_targets[i])
+        match op:
+            case ("JUMP", ofs):
+                instructions.append(("JUMP", jump_targets[1 + i + ofs]))
+            case ("JUMP-FALSE", ofs):
+                instructions.append(("JUMP-FALSE", jump_targets[1 + i + ofs]))
+            case _:
+                instructions.append(op)
+
+    return Code(instructions, code.constants, functions)
+
+
+def resolve_labels(code):
+    functions = {f: resolve_labels(c) for f, c in code.functions.items()}
+
+    labels = {}
+    i = 0
+    for op in code.instructions:
+        match op:
+            case str(s):
+                labels[s] = i
+            case _:
+                i += 1
+
+    instructions = []
+    for op in code.instructions:
+        match op:
+            case (("JUMP" | "JUMP-FALSE") as jmp, target):
+                ofs = labels[target] - len(instructions) - 1
+                instructions.append((jmp, ofs))
+            case str(s):
+                pass
+            case _:
+                instructions.append(op)
+
+    return Code(instructions, code.constants, functions)
 
 
 def remove_redundant_saves(code):
 
     functions = {f: remove_redundant_saves(c) for f, c in code.functions.items()}
-
-    # todo: currently, these optimizations break jumps
 
     instructions = []
     for op in code.instructions:
@@ -354,6 +406,4 @@ def remove_redundant_saves(code):
                 case _:
                     break
 
-    new_code = Code(instructions, code.constants, functions)
-
-    return new_code
+    return Code(instructions, code.constants, functions)
