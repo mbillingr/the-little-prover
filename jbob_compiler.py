@@ -1,6 +1,5 @@
 from jbob_parser import parse, src_pos
-from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, to_string
-
+from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, to_string, map_list
 
 global_constants = []
 global_functions = {}
@@ -322,7 +321,7 @@ def run_vm(code):
 
 def optimize(code):
     code = insert_labels(code)
-    code = monitor(inline_functions, code)
+    #code = monitor(inline_functions, code)
     code = monitor(peephole, code)
     code = resolve_labels(code)
     return code

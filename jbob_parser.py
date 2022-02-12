@@ -50,7 +50,10 @@ SRCMAP = {}
 
 
 def src_pos(obj):
-    return SRCMAP[id(obj)][0]
+    try:
+        return SRCMAP[id(obj)][0]
+    except KeyError:
+        return None, None
 
 
 class TreeToSexpr(Transformer):

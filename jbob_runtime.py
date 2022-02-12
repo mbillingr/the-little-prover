@@ -27,6 +27,13 @@ class Pair:
         return sum(1 for _ in self)
 
 
+def map_list(func, x):
+    if is_pair(x):
+        return cons(func(x.car), map_list(func, x.cdr))
+    else:
+        return ()
+
+
 assert Pair(1, 2) == Pair(1, 2)
 
 
