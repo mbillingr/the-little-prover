@@ -241,6 +241,10 @@ class Code:
 
         return out
 
+    def total_instructions(self):
+        nops = sum(f.total_instructions() for f in self.functions.values())
+        return nops + len(self.instructions)
+
 
 UNARY_BUILTINS = {
     "num": num,
@@ -314,3 +318,42 @@ def run_vm(code):
                 raise NotImplementedError(_op)
         ip += 1
     return val
+
+
+def optimize(code):
+    n_ops0 = code.total_instructions()
+
+    code = remove_redundant_saves(code)
+
+    n_ops = code.total_instructions()
+    print(
+        f"Optimize redundant stapck ops: {n_ops0 - n_ops} instructions removed ({n_ops} remaining)"
+    )
+
+    return code
+
+
+def remove_redundant_saves(code):
+
+    functions = {f: remove_redundant_saves(c) for f, c in code.functions.items()}
+
+    # todo: currently, these optimizations break jumps
+
+    instructions = []
+    for op in code.instructions:
+        instructions.append(op)
+        while True:
+            match instructions:
+                case [*_, ("SAVE", r1), ("CONSTANT", _) as op, ("RESTORE", r2)] | [
+                    *_,
+                    ("SAVE", r1),
+                    ("REF", _) as op,
+                    ("RESTORE", r2),
+                ] if r1 == r2:
+                    instructions[-3:] = [op]
+                case _:
+                    break
+
+    new_code = Code(instructions, code.constants, functions)
+
+    return new_code

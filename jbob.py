@@ -14,10 +14,11 @@ program = analyze(ast)
 evaluate(program)
 
 
-from jbob_compiler import compile, evaluate, global_functions
+from jbob_compiler import compile, evaluate, global_functions, optimize
 
 program = compile(ast)
-print(program)
+# program = optimize(program)
+# print(program)
 print(evaluate(program))
 
 print(evaluate("(list1 '42)"))
