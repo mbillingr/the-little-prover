@@ -321,25 +321,35 @@ def run_vm(code):
 
 
 def optimize(code):
-    n_ops0 = code.total_instructions()
-
     code = insert_labels(code)
+    code = monitor(inline_functions, code)
+    code = monitor(peephole, code)
+    code = resolve_labels(code)
+    return code
 
-    code = remove_redundant_saves(code)
+
+def monitor(func, code):
+    n_ops0 = code.total_instructions()
+    code = func(code)
 
     n_ops = code.total_instructions()
-    print(
-        f"Optimize redundant stapck ops: {n_ops0 - n_ops} instructions removed ({n_ops} remaining)"
-    )
-
-    code = resolve_labels(code)
+    print(f"{func.__name__}: {n_ops0 - n_ops} instructions removed ({n_ops} remaining)")
 
     return code
 
 
-def insert_labels(code):
-    functions = {f: insert_labels(c) for f, c in code.functions.items()}
+def enter_functions(func):
+    def wrapped(code):
+        functions = {f: func(c) for f, c in code.functions.items()}
+        code = func(code)
+        return Code(code.instructions, code.constants, functions)
 
+    wrapped.__name__ = func.__name__
+    return wrapped
+
+
+@enter_functions
+def insert_labels(code):
     jump_targets = {}
     for i, op in enumerate(code.instructions, start=1):
         match op:
@@ -358,12 +368,11 @@ def insert_labels(code):
             case _:
                 instructions.append(op)
 
-    return Code(instructions, code.constants, functions)
+    return Code(instructions, code.constants, code.functions)
 
 
+@enter_functions
 def resolve_labels(code):
-    functions = {f: resolve_labels(c) for f, c in code.functions.items()}
-
     labels = {}
     i = 0
     for op in code.instructions:
@@ -384,26 +393,43 @@ def resolve_labels(code):
             case _:
                 instructions.append(op)
 
-    return Code(instructions, code.constants, functions)
+    return Code(instructions, code.constants, code.functions)
 
 
-def remove_redundant_saves(code):
-
-    functions = {f: remove_redundant_saves(c) for f, c in code.functions.items()}
+@enter_functions
+def peephole(code):
 
     instructions = []
     for op in code.instructions:
         instructions.append(op)
         while True:
             match instructions:
-                case [*_, ("SAVE", r1), ("CONSTANT", _) as op, ("RESTORE", r2)] | [
-                    *_,
-                    ("SAVE", r1),
-                    ("REF", _) as op,
-                    ("RESTORE", r2),
-                ] if r1 == r2:
+                case [*_, ("SAVE", r1), ("CONSTANT" | "REF", _) as op, ("RESTORE", r2)]  if r1 == r2:
                     instructions[-3:] = [op]
+
+                case [*_, ("ARGS->ENV",), ("CONSTANT", _), ('RESTORE', 'env')]:
+                    del instructions[-3]
+
                 case _:
                     break
 
-    return Code(instructions, code.constants, functions)
+    return Code(instructions, code.constants, code.functions)
+
+
+@enter_functions
+def inline_functions(code, max_len=10):
+    instructions = []
+    for op in code.instructions:
+        match op:
+            case ("CALL", name):
+                body = global_functions[name]
+                if len(body.instructions) < max_len:
+                    instructions.extend(
+                        filter(lambda op: op != ("RETURN",), body.instructions)
+                    )
+                else:
+                    instructions.append(op)
+            case _:
+                instructions.append(op)
+
+    return Code(instructions, code.constants, code.functions)
