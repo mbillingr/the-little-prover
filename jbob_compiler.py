@@ -61,9 +61,8 @@ def compile_application(fname, args, lexical_env):
     compiled_args = list(compile_args(args, lexical_env))
 
     code = Code()
-    for i, ca in enumerate(compiled_args):
-        code = code.append(ca)
-        code = code.append(Code.set_arg(i))
+    for ca in compiled_args:
+        code = code.append(Code.set_arg(ca))
 
     return code.append(Code.call(fname, len(compiled_args)))
 
@@ -139,12 +138,15 @@ class Code:
         return Code([("CALL", name, nargs)])
 
     @staticmethod
-    def set_arg(i):
-        return Code([("PUSH-ARG",)])
+    def set_arg(arg_code):
+        code = Code([("SAVE", "args")])
+        code = code.append(arg_code)
+        code = code.append(Code([("RESTORE", "args"), ("PUSH-ARG",)]))
+        return code
 
     @staticmethod
     def init_args(params):
-        return Code([("POP-ARGS", len(params))])
+        return Code()
 
     @staticmethod
     def define(name, body):
@@ -209,48 +211,50 @@ BUILTINS = {
 
 
 def run_vm(code):
-    ip = 0
     stack = []
+    ip = 0
     val = None
     args = []
+    env = []
+    return_point = None
     while ip < len(code):
-        match code[ip]:
+        match op := code[ip]:
             case ("CONSTANT", idx):
                 val = global_constants[idx]
             case ("REF", idx):
-                val = args[idx]
+                val = env[idx]
             case ("JUMP", offset):
                 ip += offset
             case ("JUMP-FALSE", offset):
                 if val == "nil":
                     ip += offset
             case ("PUSH-ARG",):
-                stack.append(val)
-            case ("POP-ARGS", nargs):
-                frame = stack.pop()
-                k = len(stack) - nargs
-                args = stack[k:]
-                stack = stack[:k]
-                stack.append(frame)
+                args.append(val)
+            case ("SAVE", "args"):
+                stack.append(args)
+                args = []
+            case ("RESTORE", "args"):
+                args = stack.pop()
             case ("CALL", "atom", 1):
-                val = atom(stack.pop())
+                val = atom(args.pop())
             case ("CALL", "car", 1):
-                val = car(stack.pop())
+                val = car(args.pop())
             case ("CALL", "cdr", 1):
-                val = cdr(stack.pop())
+                val = cdr(args.pop())
             case ("CALL", "cons", 2):
-                second = stack.pop()
-                val = cons(stack.pop(), second)
+                second = args.pop()
+                val = cons(args.pop(), second)
             case ("CALL", "equal", 2):
-                val = "t" if stack.pop() == stack.pop() else "nil"
+                val = "t" if args.pop() == args.pop() else "nil"
             case ("CALL", "natp", 1):
-                x = stack.pop()
+                x = args.pop()
                 val = "t" if isinstance(x, int) and x >= 0 else "nil"
             case ("CALL", "+", 2):
-                val = num(stack.pop()) + num(stack.pop())
+                val = num(args.pop()) + num(args.pop())
             case ("CALL", "<", 2):
-                # use > because arguments on the stack are reversed
-                val = "t" if num(stack.pop()) > num(stack.pop()) else "nil"
+                # use > because arguments on the stack are reversed.
+                # This depends on Python's evaluation order
+                val = "t" if num(args.pop()) > num(args.pop()) else "nil"
             case ("CALL", func, nargs):
                 TC = False
                 try:
@@ -259,17 +263,20 @@ def run_vm(code):
                 except IndexError:
                     pass
 
-                frame = ("FRAME", code, ip, args)
-
                 if not TC:
-                    stack.append(frame)
-                else:
-                    raise NotImplementedError("In TCs the frame is not in the right position...")
+                    stack.append(return_point)
+                    stack.append(code)
+                    stack.append(env)
+                    return_point = ip
 
+                env, args = args, []
                 code = global_functions[func].instructions
                 ip = -1
             case ("RETURN",):
-                _, code, ip, args = stack.pop()
+                ip = return_point
+                env = stack.pop()
+                code = stack.pop()
+                return_point = stack.pop()
             case op:
                 raise NotImplementedError(op)
         ip += 1
