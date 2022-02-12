@@ -159,6 +159,7 @@ class Code:
             [
                 ("SAVE", "return_point"),
                 ("SAVE", "env"),
+                ("ARGS->ENV",),
                 ("CALL", name),
                 ("RESTORE", "env"),
                 ("RESTORE", "return_point"),
@@ -167,7 +168,7 @@ class Code:
 
     @staticmethod
     def tailcall(name):
-        return Code([("TAIL-CALL", name)])
+        return Code([("ARGS->ENV",), ("GOTO", name)])
 
     @staticmethod
     def set_arg(arg_code):
@@ -302,14 +303,13 @@ def run_vm(code):
                 b = args.pop()
                 a = args.pop()
                 val = BINARY_BUILTINS[name](a, b)
-            case ("TAIL-CALL", func):
+            case ("ARGS->ENV",):
                 env, args = args, []
+            case ("GOTO", func):
                 code = global_functions[func].instructions
                 ip = -1
             case ("CALL", func):
                 return_point = ip, code
-
-                env, args = args, []
                 code = global_functions[func].instructions
                 ip = -1
             case ("RETURN",):
