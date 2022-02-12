@@ -15,8 +15,8 @@ def evaluate(expr):
 
         expr = compile(parse(expr))
 
-    constant_offset = len(global_constants)
-    expr = expr.add_constant_offset(constant_offset)
+    global_constants, c_mapping = Code.merge_constants(global_constants, expr.constants)
+    expr = expr.map_constants(c_mapping)
 
     global_constants += expr.constants
     global_functions |= expr.functions
@@ -77,7 +77,10 @@ def compile_application(fname, args, lexical_env, tail):
 def compile_args(args, lexical_env):
     if is_null(args):
         return args
-    return cons(compile(car(args), lexical_env, tail=False), compile_args(cdr(args), lexical_env))
+    return cons(
+        compile(car(args), lexical_env, tail=False),
+        compile_args(cdr(args), lexical_env),
+    )
 
 
 def compile_reference(name, lexical_env):
@@ -106,7 +109,9 @@ def compile_definition(name, params, body, lexical_env):
 
     lexical_env = tuple(params)
 
-    compiled_body = header.append(compile(body, lexical_env, tail=True)).append(Code.return_())
+    compiled_body = header.append(compile(body, lexical_env, tail=True)).append(
+        Code.return_()
+    )
 
     return Code.define(name, compiled_body)
 
@@ -175,22 +180,35 @@ class Code:
         return Code(constants=constants, functions={name: body})
 
     def append(self, other):
-        const_offset = len(self.constants)
-        other = other.add_constant_offset(const_offset)
+        constants, c_mapping = self.merge_constants(self.constants, other.constants)
+        other = other.map_constants(c_mapping)
         return Code(
             self.instructions + other.instructions,
-            self.constants + other.constants,
+            constants,
             self.functions | other.functions,
         )
 
-    def add_constant_offset(self, offset):
+    @staticmethod
+    def merge_constants(existing, other):
+        offset = len(existing)
+        new_constants = []
+        mapping = []
+        for c in other:
+            try:
+                idx = existing.index(c)
+            except ValueError:
+                idx = offset + len(new_constants)
+                new_constants.append(c)
+            mapping.append(idx)
+        return existing + new_constants, mapping
+
+    def map_constants(self, mapping):
         code = [
-            ("CONSTANT", op[1] + offset) if op[0] == "CONSTANT" else op
+            ("CONSTANT", mapping[op[1]]) if op[0] == "CONSTANT" else op
             for op in self.instructions
         ]
         functions = {
-            name: body.add_constant_offset(offset)
-            for name, body in self.functions.items()
+            name: body.map_constants(mapping) for name, body in self.functions.items()
         }
         return Code(code=code, constants=self.constants, functions=functions)
 
@@ -240,7 +258,8 @@ def run_vm(code):
     env = []
     return_point = None
     while ip < len(code):
-        match op := code[ip]:
+        op = code[ip]
+        match op:
             case ("CONSTANT", idx):
                 val = global_constants[idx]
             case ("REF", idx):
@@ -281,7 +300,7 @@ def run_vm(code):
                 env = stack.pop()
                 code = stack.pop()
                 return_point = stack.pop()
-            case op:
-                raise NotImplementedError(op)
+            case _op:
+                raise NotImplementedError(_op)
         ip += 1
     return val
