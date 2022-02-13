@@ -17,20 +17,20 @@ program = analyze(ast)
 evaluate(program)
 
 
-# from jbob_compiler import compile, evaluate, global_functions, optimize
-#
-# program = compile(ast)
-# evaluate(program)  # evaluate once, to populate the function environment
-# program = optimize(program)
-# #evaluate(program)  # evaluate once, to populate the function environment
-# #program = optimize(program)
-# print(program)
-# print(evaluate(program))
-#
-# print(evaluate("(list1 '42)"))
-#
-# print(evaluate("(list2? '(1 2))"))
-#
-#
-# def undefine(name):
-#     del global_functions[name]
+from jbob_compiler import compile, evaluate, global_functions, optimize
+
+program = compile(ast)
+evaluate(program)  # evaluate once, to populate the function environment
+program = optimize(program)
+#evaluate(program)  # evaluate once, to populate the function environment
+#program = optimize(program)
+print(program)
+print(evaluate(program))
+
+print(evaluate("(list1 '42)"))
+
+print(evaluate("(list2? '(1 2))"))
+
+
+def undefine(name):
+    del global_functions[name]

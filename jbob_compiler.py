@@ -263,60 +263,54 @@ BINARY_BUILTINS = {
 
 
 def run_vm(code):
-    stack = []
+    value_stack = []
+    call_stack = []
     ip = 0
-    val = None
-    args = []
-    env = []
-    return_point = None
+    fp = 0
+
+    def push(x):
+        value_stack.append(x)
+
+    def pop():
+        return value_stack.pop()
+
+    def ref(idx):
+        value_stack.append(value_stack[fp + idx])
+
     while ip < len(code):
         op = code[ip]
         match op:
             case ("CONSTANT", idx):
-                val = global_constants[idx]
+                push(global_constants[idx])
             case ("REF", idx):
-                val = env[idx]
+                ref(idx)
+            case ("DROP",):
+                pop()
             case ("JUMP", offset):
                 ip += offset
             case ("JUMP-FALSE", offset):
                 if val == "nil":
                     ip += offset
-            case ("PUSH-ARG",):
-                args.append(val)
-            case ("SAVE", "args"):
-                stack.append(args)
-                args = []
-            case ("SAVE", "env"):
-                stack.append(env)
-            case ("SAVE", "return_point"):
-                stack.append(return_point)
-            case ("RESTORE", "args"):
-                args = stack.pop()
-            case ("RESTORE", "env"):
-                env = stack.pop()
-            case ("RESTORE", "return_point"):
-                return_point = stack.pop()
             case ("UNARY-OP", name):
-                val = UNARY_BUILTINS[name](args.pop())
+                val = UNARY_BUILTINS[name](pop())
             case ("BINARY-OP", name):
-                b = args.pop()
-                a = args.pop()
+                b = pop()
+                a = pop()
                 val = BINARY_BUILTINS[name](a, b)
-            case ("ARGS->ENV",):
-                env, args = args, []
             case ("GOTO", func):
                 code = global_functions[func].instructions
                 ip = -1
             case ("CALL", func):
+                call_stack.append((ip, code))
                 return_point = ip, code
                 code = global_functions[func].instructions
                 ip = -1
             case ("RETURN",):
-                ip, code = return_point
+                ip, code = call_stack.pop()
             case _op:
                 raise NotImplementedError(_op)
         ip += 1
-    return val
+    return pop()
 
 
 def optimize(code):
