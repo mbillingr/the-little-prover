@@ -59,8 +59,9 @@ def compile_sequence(exprs, lexical_env, tail):
 def compile_application(fname, args, lexical_env, tail):
     compiled_args = list(compile_args(args, lexical_env))
 
+    # put args in reverse order on the stack
     code = Code()
-    for ca in compiled_args:
+    for ca in compiled_args[::-1]:
         code = code.append(Code.set_arg(ca))
 
     if fname in UNARY_BUILTINS:
@@ -68,9 +69,9 @@ def compile_application(fname, args, lexical_env, tail):
     elif fname in BINARY_BUILTINS:
         return code.append(Code.binop(fname))
     elif tail:
-        return code.append(Code.tailcall(fname))
+        return code.append(Code.tailcall(fname, len(compiled_args), len(lexical_env)))
     else:
-        return code.append(Code.call(fname))
+        return code.append(Code.call(fname, len(compiled_args)))
 
 
 def compile_args(args, lexical_env):
@@ -109,7 +110,7 @@ def compile_definition(name, params, body, lexical_env):
     lexical_env = tuple(params)
 
     compiled_body = header.append(compile(body, lexical_env, tail=True)).append(
-        Code.return_()
+        Code.return_(len(lexical_env))
     )
 
     return Code.define(name, compiled_body)
@@ -149,32 +150,20 @@ class Code:
         return Code([("BINARY-OP", name)])
 
     @staticmethod
-    def return_():
-        return Code([("RETURN",)])
+    def return_(n_drop):
+        return Code([("DROP", 1) for _ in range(n_drop)] + [("RETURN",)])
 
     @staticmethod
-    def call(name):
-        return Code(
-            [
-                ("SAVE", "return_point"),
-                ("SAVE", "env"),
-                ("ARGS->ENV",),
-                ("CALL", name),
-                ("RESTORE", "env"),
-                ("RESTORE", "return_point"),
-            ]
-        )
+    def call(name, n_args):
+        return Code([("CALL", name)])
 
     @staticmethod
-    def tailcall(name):
-        return Code([("ARGS->ENV",), ("GOTO", name)])
+    def tailcall(name, n_args, n_drop):
+        return Code([("DROP", n_args) for _ in range(n_drop)] + [("GOTO", name)])
 
     @staticmethod
     def set_arg(arg_code):
-        code = Code([("SAVE", "args")])
-        code = code.append(arg_code)
-        code = code.append(Code([("RESTORE", "args"), ("PUSH-ARG",)]))
-        return code
+        return arg_code
 
     @staticmethod
     def init_args(params):
@@ -263,7 +252,7 @@ BINARY_BUILTINS = {
 
 
 def run_vm(code):
-    value_stack = []
+    value_stack = [None]  # value stack initially contains the default result
     call_stack = []
     ip = 0
     fp = 0
@@ -271,11 +260,16 @@ def run_vm(code):
     def push(x):
         value_stack.append(x)
 
-    def pop():
-        return value_stack.pop()
+    def pop(k=0):
+        if k == 0:
+            return value_stack.pop()
+        else:
+            x = value_stack[-1 - k]
+            del value_stack[-1 - k]
+            return x
 
     def ref(idx):
-        value_stack.append(value_stack[fp + idx])
+        value_stack.append(value_stack[fp - idx])
 
     while ip < len(code):
         op = code[ip]
@@ -286,27 +280,32 @@ def run_vm(code):
                 ref(idx)
             case ("DROP",):
                 pop()
+            case ("DROP", k):
+                pop(k)
+            case ("SWAP",):
+                value_stack[-2:] = value_stack[:-3:-1]
             case ("JUMP", offset):
                 ip += offset
             case ("JUMP-FALSE", offset):
-                if val == "nil":
+                if pop() == "nil":
                     ip += offset
             case ("UNARY-OP", name):
-                val = UNARY_BUILTINS[name](pop())
+                push(UNARY_BUILTINS[name](pop()))
             case ("BINARY-OP", name):
-                b = pop()
                 a = pop()
-                val = BINARY_BUILTINS[name](a, b)
+                b = pop()
+                push(BINARY_BUILTINS[name](a, b))
             case ("GOTO", func):
+                fp = len(value_stack) - 1
                 code = global_functions[func].instructions
                 ip = -1
             case ("CALL", func):
-                call_stack.append((ip, code))
-                return_point = ip, code
+                call_stack.append((ip, fp, code))
+                fp = len(value_stack) - 1
                 code = global_functions[func].instructions
                 ip = -1
             case ("RETURN",):
-                ip, code = call_stack.pop()
+                ip, fp, code = call_stack.pop()
             case _op:
                 raise NotImplementedError(_op)
         ip += 1
@@ -315,7 +314,7 @@ def run_vm(code):
 
 def optimize(code):
     code = insert_labels(code)
-    #code = monitor(inline_functions, code)
+    # code = monitor(inline_functions, code)
     code = monitor(peephole, code)
     code = resolve_labels(code)
     return code
@@ -397,10 +396,15 @@ def peephole(code):
         instructions.append(op)
         while True:
             match instructions:
-                case [*_, ("SAVE", r1), ("CONSTANT" | "REF", _) as op, ("RESTORE", r2)]  if r1 == r2:
+                case [
+                    *_,
+                    ("SAVE", r1),
+                    ("CONSTANT" | "REF", _) as op,
+                    ("RESTORE", r2),
+                ] if r1 == r2:
                     instructions[-3:] = [op]
 
-                case [*_, ("ARGS->ENV",), ("CONSTANT", _), ('RESTORE', 'env')]:
+                case [*_, ("ARGS->ENV",), ("CONSTANT", _), ("RESTORE", "env")]:
                     del instructions[-3]
 
                 case _:

@@ -11,7 +11,7 @@ def undefine(name):
 # =======
 with open("j-bob.scm") as fd:
     ast = parse(fd.read())
-ast = inline_all(ast)
+#ast = inline_all(ast)
 
 program = analyze(ast)
 evaluate(program)
@@ -20,12 +20,14 @@ evaluate(program)
 from jbob_compiler import compile, evaluate, global_functions, optimize
 
 program = compile(ast)
-evaluate(program)  # evaluate once, to populate the function environment
+# evaluate(program)  # evaluate once, to populate the function environment
 program = optimize(program)
-#evaluate(program)  # evaluate once, to populate the function environment
-#program = optimize(program)
+# evaluate(program)  # evaluate once, to populate the function environment
+# program = optimize(program)
 print(program)
 print(evaluate(program))
+
+print(evaluate("(member? '1 '(1 2))"))
 
 print(evaluate("(list1 '42)"))
 
