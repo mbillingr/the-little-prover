@@ -1,7 +1,8 @@
+import json
 from collections import deque
 
 from jbob_parser import src_pos
-from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, to_string
+from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, to_string, pythonize
 
 global_constants = []
 global_functions = {}
@@ -236,6 +237,14 @@ class Code:
         nops = sum(f.total_instructions() for f in self.functions.values())
         return nops + len(self.instructions)
 
+    def export(self):
+        data = {
+            "CONSTANTS": [pythonize(c) for c in self.constants],
+            "FUNCTIONS": {name: code.instructions for name, code in self.functions.items()},
+            "CODE": self.instructions,
+        }
+        return json.dumps(data)
+
 
 UNARY_BUILTINS = {
     "num": num,
@@ -324,8 +333,8 @@ def optimize(code):
     code = monitor(eliminate_useless_jumps, code)
     code = monitor(resolve_labels, code)
     # code = monitor(inline_functions, code)
-    #code = monitor(peephole, code)
-    #code = monitor(mark_dead_code, code)
+    # code = monitor(peephole, code)
+    # code = monitor(mark_dead_code, code)
     return code
 
 
@@ -359,7 +368,7 @@ def insert_labels(code, fname=None):
             case ("JUMP-FALSE", ofs):
                 jump_targets[i] = f"label-{i}"
                 jump_targets[i + ofs] = f"label-{i+ofs}"
-            case ("RETURN", ) | ("GOTO", _):
+            case ("RETURN",) | ("GOTO", _):
                 jump_targets[i] = f"label-{i}"
 
     instructions = []
@@ -432,7 +441,7 @@ def unravel(code, fname=None):
             case ("RETURN",) | ("JUMP", _) | ("GOTO", _):
                 close_block(op)
             case ("JUMP-FALSE", target):
-                fall_through = code.instructions[i+1]
+                fall_through = code.instructions[i + 1]
                 assert isinstance(fall_through, str)
                 close_block(("BRANCH", fall_through, target))
             case _:
@@ -463,7 +472,7 @@ def linearize(code, fname=None):
         if current_block:
             instructions.extend(current_block)
             match instructions[-1]:
-                case ("RETURN", ) | ("GOTO", _):
+                case ("RETURN",) | ("GOTO", _):
                     continue
                 case ("JUMP", target):
                     pending_blocks.append(target)
@@ -474,7 +483,8 @@ def linearize(code, fname=None):
                     else:
                         pending_blocks.appendleft(yes)
                     pending_blocks.append(no)
-                case op: raise NotImplementedError(op)
+                case op:
+                    raise NotImplementedError(op)
 
     return Code(instructions, code.constants, code.functions)
 
@@ -567,7 +577,8 @@ def collapse_jump_cascades(code, fname=None):
                     match code.instructions[target_pos]:
                         case ("JUMP", t):
                             target = t
-                        case _: break
+                        case _:
+                            break
                 instructions.append((jmp, target))
             case _:
                 instructions.append(op)
@@ -586,14 +597,16 @@ def eliminate_useless_jumps(code, fname=None):
                     match code.instructions[label_pos + 1]:
                         case ("JUMP", t):
                             target = t
-                        case _: break
+                        case _:
+                            break
 
                 match jmp, label_pos == i + 1:
                     case "JUMP", True:
                         pass
                     case "JUMP-FALSE", True:
                         instructions.append(("DROP",))
-                    case _: instructions.append((jmp, target))
+                    case _:
+                        instructions.append((jmp, target))
             case _:
                 instructions.append(op)
 
@@ -617,7 +630,8 @@ def mark_dead_code(code, fname=None):
                 case ("JUMP-FALSE", target):
                     visit_code(find_label(code, target))
                     pos += 1
-                case _: pos += 1
+                case _:
+                    pos += 1
 
     visit_code(0)
 

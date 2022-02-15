@@ -24,8 +24,10 @@ program = compile(ast)
 program = optimize(program)
 # evaluate(program)  # evaluate once, to populate the function environment
 # program = optimize(program)
-print(program)
-print(evaluate(program))
+#print(program)
+with open("j-bob.json", "w") as fd:
+    fd.write(program.export())
+evaluate(program)
 
 print(evaluate("(member? '1 '(1 2))"))
 

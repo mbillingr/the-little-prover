@@ -97,5 +97,14 @@ def to_string(obj):
         return str(obj)
 
 
+def pythonize(obj):
+    match obj:
+        case _ if is_list(obj):
+            return list(map(pythonize, obj))
+        case Pair(a, d):
+            return {"pair": (a, d)}
+        case _: return obj
+
+
 def display(*objs):
     print(" ".join(map(to_string, objs)))
