@@ -1,3 +1,5 @@
+from collections import deque
+
 from jbob_parser import src_pos
 from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, to_string
 
@@ -314,11 +316,16 @@ def run_vm(code):
 
 def optimize(code):
     code = insert_labels(code)
-    # code = monitor(inline_functions, code)
-    code = monitor(peephole, code)
+    code = unravel(code)
+    code = monitor(eliminate_trivial_blocks, code)
+    code = monitor(merge_equal_blocks, code)
+    code = linearize(code)
     code = monitor(collapse_jump_cascades, code)
-    code = monitor(mark_dead_code, code)
-    code = resolve_labels(code)
+    code = monitor(eliminate_useless_jumps, code)
+    code = monitor(resolve_labels, code)
+    # code = monitor(inline_functions, code)
+    #code = monitor(peephole, code)
+    #code = monitor(mark_dead_code, code)
     return code
 
 
@@ -327,14 +334,14 @@ def monitor(func, code):
     code = func(code)
 
     n_ops = code.total_instructions()
-    print(f"{func.__name__}: {n_ops0 - n_ops} instructions removed ({n_ops} remaining)")
+    print(f"{func.__name__}: {n_ops} items remaining")
 
     return code
 
 
 def enter_functions(func):
     def wrapped(code):
-        functions = {f: func(c) for f, c in code.functions.items()}
+        functions = {f: func(c, fname=f) for f, c in code.functions.items()}
         code = func(code)
         return Code(code.instructions, code.constants, functions)
 
@@ -343,12 +350,17 @@ def enter_functions(func):
 
 
 @enter_functions
-def insert_labels(code):
+def insert_labels(code, fname=None):
     jump_targets = {}
     for i, op in enumerate(code.instructions, start=1):
         match op:
-            case ("JUMP", ofs) | ("JUMP-FALSE", ofs):
+            case ("JUMP", ofs):
                 jump_targets[i + ofs] = f"label-{i+ofs}"
+            case ("JUMP-FALSE", ofs):
+                jump_targets[i] = f"label-{i}"
+                jump_targets[i + ofs] = f"label-{i+ofs}"
+            case ("RETURN", ) | ("GOTO", _):
+                jump_targets[i] = f"label-{i}"
 
     instructions = []
     for i, op in enumerate(code.instructions):
@@ -366,7 +378,7 @@ def insert_labels(code):
 
 
 @enter_functions
-def resolve_labels(code):
+def resolve_labels(code, fname=None):
     labels = {}
     i = 0
     for op1 in code.instructions:
@@ -379,7 +391,10 @@ def resolve_labels(code):
     instructions = []
     for op in code.instructions:
         match op:
-            case (("JUMP" | "JUMP-FALSE") as jmp, target):
+            case ("JUMP" as jmp, target):
+                ofs = labels[target] - len(instructions) - 1
+                instructions.append((jmp, ofs))
+            case ("JUMP-FALSE" as jmp, target):
                 ofs = labels[target] - len(instructions) - 1
                 instructions.append((jmp, ofs))
             case str(s):
@@ -390,12 +405,134 @@ def resolve_labels(code):
     return Code(instructions, code.constants, code.functions)
 
 
+@enter_functions
+def unravel(code, fname=None):
+    if fname == "elem2":
+        pass
+    blocks = {}
+
+    def close_block(op=None):
+        nonlocal current_name, current_block
+        assert current_name is not None
+        assert current_name not in blocks
+        if op is not None:
+            current_block.append(op)
+        blocks[current_name] = current_block
+        current_name = None
+        current_block = []
+
+    current_name = "entry"
+    current_block = []
+    for i, op in enumerate(code.instructions):
+        match op:
+            case str(label):
+                if current_name is not None:
+                    close_block(("JUMP", label))
+                current_name = label
+            case ("RETURN",) | ("JUMP", _) | ("GOTO", _):
+                close_block(op)
+            case ("JUMP-FALSE", target):
+                fall_through = code.instructions[i+1]
+                assert isinstance(fall_through, str)
+                close_block(("BRANCH", fall_through, target))
+            case _:
+                assert current_name is not None
+                current_block.append(op)
+
+    if current_name is not None:
+        close_block()
+
+    return Code(blocks, code.constants, code.functions)
+
+
+@enter_functions
+def linearize(code, fname=None):
+    instructions = []
+    linearized_blocks = set()
+
+    pending_blocks = deque(["entry"])
+
+    while pending_blocks:
+        current_label = pending_blocks.popleft()
+        if current_label in linearized_blocks:
+            continue
+        linearized_blocks.add(current_label)
+
+        instructions.append(current_label)
+        current_block = code.instructions[current_label]
+        if current_block:
+            instructions.extend(current_block)
+            match instructions[-1]:
+                case ("RETURN", ) | ("GOTO", _):
+                    continue
+                case ("JUMP", target):
+                    pending_blocks.append(target)
+                case ("BRANCH", yes, no):
+                    instructions[-1] = ("JUMP-FALSE", no)
+                    if yes in linearized_blocks:
+                        instructions.append(("JUMP", yes))
+                    else:
+                        pending_blocks.appendleft(yes)
+                    pending_blocks.append(no)
+                case op: raise NotImplementedError(op)
+
+    return Code(instructions, code.constants, code.functions)
+
+
 def find_label(code, label):
     return code.instructions.index(label)
 
 
 @enter_functions
-def peephole(code):
+def merge_equal_blocks(code, fname=None):
+    if fname == "J-Bob/define":
+        pass
+    r_blocks = {tuple(b): lbl for lbl, b in code.instructions.items()}
+    remap = {lbl: r_blocks[tuple(b)] for lbl, b in code.instructions.items()}
+
+    blocks = retarget_jumps(code.instructions, remap)
+
+    return Code(blocks, code.constants, code.functions)
+
+
+@enter_functions
+def eliminate_trivial_blocks(code, fname=None):
+    if fname == "J-Bob/define":
+        pass
+    remap = {}
+    for label in code.instructions.keys():
+        target = label
+        while True:
+            match code.instructions[target]:
+                case [("JUMP", t)]:
+                    target = t
+                case _:
+                    break
+        remap[label] = target
+
+    blocks = retarget_jumps(code.instructions, remap)
+
+    return Code(blocks, code.constants, code.functions)
+
+
+def retarget_jumps(blocks, remap):
+    blocks_out = {}
+    for label, block in blocks.items():
+        block_out = []
+        for op in block:
+            match op:
+                case ("JUMP", target):
+                    block_out.append(("JUMP", remap[target]))
+                case ("BRANCH", a, b):
+                    block_out.append(("BRANCH", remap[a], remap[b]))
+                case _:
+                    block_out.append(op)
+        blocks_out[label] = block_out
+    return blocks_out
+
+
+@enter_functions
+def peephole(code, fname=None):
 
     instructions = []
     for op in code.instructions:
@@ -420,7 +557,7 @@ def peephole(code):
 
 
 @enter_functions
-def collapse_jump_cascades(code):
+def collapse_jump_cascades(code, fname=None):
     instructions = []
     for op in code.instructions:
         match op:
@@ -439,7 +576,32 @@ def collapse_jump_cascades(code):
 
 
 @enter_functions
-def mark_dead_code(code):
+def eliminate_useless_jumps(code, fname=None):
+    instructions = []
+    for i, op in enumerate(code.instructions):
+        match op:
+            case ("JUMP" | "JUMP-FALSE" as jmp, target):
+                while True:
+                    label_pos = find_label(code, target)
+                    match code.instructions[label_pos + 1]:
+                        case ("JUMP", t):
+                            target = t
+                        case _: break
+
+                match jmp, label_pos == i + 1:
+                    case "JUMP", True:
+                        pass
+                    case "JUMP-FALSE", True:
+                        instructions.append(("DROP",))
+                    case _: instructions.append((jmp, target))
+            case _:
+                instructions.append(op)
+
+    return Code(instructions, code.constants, code.functions)
+
+
+@enter_functions
+def mark_dead_code(code, fname=None):
     visited = [False] * len(code.instructions)
 
     def visit_code(pos):
