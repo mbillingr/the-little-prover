@@ -34,21 +34,26 @@ def inline_all(expr):
             case _:
                 return expr
 
-    def apply_inline(f, args):
+    def apply_inline(f, arguments):
         try:
             formals, body = funcs[f]
         except KeyError:
-            return cons(f, args)
+            return cons(f, arguments)
 
         formals = tuple(formals)
-        args = tuple(args)
+        args = tuple(arguments)
 
         assert len(formals) == len(args)
 
         if is_null(args):
-            return body
+            inlined = body
         else:
-            return substitute(body, formals, args)
+            inlined = substitute(body, formals, args)
+
+        call = cons(f, arguments)
+        print(f"call to {call}, complexity: {complexity(call)} -> {complexity(inlined)}")
+
+        return inlined
 
     def substitute(expr, names, values):
         match expr:
@@ -97,3 +102,17 @@ def get_functions(expr):
             return funcs
         case _:
             return {}
+
+
+def complexity(expr):
+    match expr:
+        case Pair("quote", _): return 0
+        case Pair("defun", _): return 0
+        case Pair("if", Pair(q, Pair(a, Pair(e, ())))):
+            return complexity(q) + complexity(a) + complexity(e) + 1
+        case Pair(f, args):
+            return 1 + sum(complexity(a) for a in args)
+        case list(_):
+            return sum(complexity(x) for x in expr)
+        case _:
+            return 0

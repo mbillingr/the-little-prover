@@ -1,5 +1,5 @@
-from jbob_parser import parse, src_pos
-from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, to_string, map_list
+from jbob_parser import src_pos
+from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, to_string
 
 global_constants = []
 global_functions = {}
@@ -316,6 +316,8 @@ def optimize(code):
     code = insert_labels(code)
     # code = monitor(inline_functions, code)
     code = monitor(peephole, code)
+    code = monitor(collapse_jump_cascades, code)
+    code = monitor(mark_dead_code, code)
     code = resolve_labels(code)
     return code
 
@@ -367,10 +369,10 @@ def insert_labels(code):
 def resolve_labels(code):
     labels = {}
     i = 0
-    for op in code.instructions:
-        match op:
-            case str(s):
-                labels[s] = i
+    for op1 in code.instructions:
+        match op1:
+            case str(s1):
+                labels[s1] = i
             case _:
                 i += 1
 
@@ -386,6 +388,10 @@ def resolve_labels(code):
                 instructions.append(op)
 
     return Code(instructions, code.constants, code.functions)
+
+
+def find_label(code, label):
+    return code.instructions.index(label)
 
 
 @enter_functions
@@ -409,6 +415,51 @@ def peephole(code):
 
                 case _:
                     break
+
+    return Code(instructions, code.constants, code.functions)
+
+
+@enter_functions
+def collapse_jump_cascades(code):
+    instructions = []
+    for op in code.instructions:
+        match op:
+            case ("JUMP" | "JUMP-FALSE" as jmp, target):
+                while True:
+                    target_pos = find_label(code, target) + 1
+                    match code.instructions[target_pos]:
+                        case ("JUMP", t):
+                            target = t
+                        case _: break
+                instructions.append((jmp, target))
+            case _:
+                instructions.append(op)
+
+    return Code(instructions, code.constants, code.functions)
+
+
+@enter_functions
+def mark_dead_code(code):
+    visited = [False] * len(code.instructions)
+
+    def visit_code(pos):
+        while True:
+            if pos >= len(visited):
+                break
+            if visited[pos]:
+                return
+            visited[pos] = True
+            match code.instructions[pos]:
+                case ("JUMP", target):
+                    pos = find_label(code, target)
+                case ("JUMP-FALSE", target):
+                    visit_code(find_label(code, target))
+                    pos += 1
+                case _: pos += 1
+
+    visit_code(0)
+
+    instructions = [op if v else ("NOP",) for v, op in zip(visited, code.instructions)]
 
     return Code(instructions, code.constants, code.functions)
 

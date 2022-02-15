@@ -11,7 +11,7 @@
 
 (defun list2 (x y) (cons x (list1 y)))
 (defun list2? (x)
-  (if (atom x) 'nil (list1? (cdr x))))
+  (if (atom x) 'nil (list1? (cdr x))))  ; (if (atom x) 'nil (if (atom (cdr x)) 'nil (list0? (cdr (cdr x)))))))
 (defun elem2 (xs) (elem1 (cdr xs)))
 
 (defun list3 (x y z) (cons x (list2 y z)))
