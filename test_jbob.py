@@ -8,8 +8,9 @@ def assert_same_value(expr1, expr2):
     assert evaluate(expr1) == evaluate(expr2)
 
 
-def test_jbob():
-    with open("test_recess.scm") as fd:
+@pytest.mark.parametrize("testsuite", ["test_recess.scm"])
+def test_jbob(testsuite):
+    with open(testsuite) as fd:
         ast = parse(fd.read())
     evaluate_testsuite(ast)
 
