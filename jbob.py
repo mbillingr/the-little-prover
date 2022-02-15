@@ -10,6 +10,5 @@ def undefine(name):
 # =======
 with open("j-bob.scm") as fd:
     ast = parse(fd.read())
-
 program = analyze(ast)
 evaluate(program)
