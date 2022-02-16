@@ -216,6 +216,13 @@ pub fn _lt<'a>(_: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     }
 }
 
-pub fn size<'a>(_context: &'a Context<'a>, _x: S<'a>) -> S<'a> {
-    todo!()
+pub fn size<'a>(_: &'a Context<'a>, x: S<'a>) -> S<'a> {
+    S::Num(raw_size(x))
+}
+
+pub fn raw_size(x: S) -> i64 {
+    match x {
+        S::Pair(&(car, cdr)) => 1 + raw_size(car) + raw_size(cdr),
+        _ => 0,
+    }
 }
