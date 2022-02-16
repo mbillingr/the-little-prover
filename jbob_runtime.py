@@ -68,6 +68,13 @@ def cadr(p):
     return car(cdr(p))
 
 
+def size(x):
+    if is_pair(x):
+        return 1 + size(car(x)) + size(cdr(x))
+    else:
+        return 0
+
+
 def is_list(obj, len=None):
     match len:
         case None:
