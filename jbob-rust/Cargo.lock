@@ -5,3 +5,12 @@ version = 3
 [[package]]
 name = "jbob-rust"
 version = "0.1.0"
+dependencies = [
+ "sexpr_parser",
+]
+
+[[package]]
+name = "sexpr_parser"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "140b054cfbfe35f7c034f4495a8fa52053b60fc8d3ffba286315e0f1c6123be7"

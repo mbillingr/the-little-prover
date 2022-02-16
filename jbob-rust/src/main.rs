@@ -2,6 +2,7 @@ pub mod j_bob;
 mod jbob_runtime;
 
 use jbob_runtime::{Context, S};
+use sexpr_parser::Parser;
 
 macro_rules! sx {
     (()) => { S::Empty };
@@ -14,17 +15,15 @@ macro_rules! sx {
 }
 
 fn main() {
-    let ctx = Context::new();
-
-    let expr = sx![("car" ("cons" ("quote" "ham") ("quote" ("cheese"))))];
-    let steps = sx![((() ("car/cons" ("quote" "ham") ("quote" ("cheese")))))];
+    let mut ctx = Context::new();
+    let expr = ctx.parse("(car (cons 'ham '(cheese)))").unwrap();
+    let steps = ctx.parse("((() (car/cons 'ham '(cheese))))").unwrap();
 
     println!("{:?}", expr);
     println!("{:?}", steps);
+
     for _ in 0..10 {
-        println!(
-            "{:?}",
-            j_bob::j_bob_slash_step(&ctx, j_bob::prelude(&ctx), expr, steps)
-        );
+        let defs = j_bob::prelude(&ctx);
+        println!("{:?}", j_bob::j_bob_slash_step(&ctx, defs, expr, steps));
     }
 }

@@ -1,3 +1,4 @@
+use sexpr_parser::SexprFactory;
 use std::cell::{Cell, RefCell};
 
 #[derive(Copy, Clone, PartialEq)]
@@ -51,27 +52,46 @@ impl std::fmt::Debug for S<'_> {
 
 pub struct Context<'a> {
     pairs: SegmentStorage<P<'a>>,
+    symbols: RefCell<Vec<String>>,
 }
 
 impl<'a> Context<'a> {
     pub fn new() -> Self {
         Context {
             pairs: SegmentStorage::new(),
+            symbols: RefCell::new(vec![]),
         }
     }
 
-    pub fn cons(&'a self, a: S<'a>, b: S<'a>) -> S<'a> {
+    pub fn cons(&self, a: S<'a>, b: S<'a>) -> S<'a> {
         let p = self.pairs.alloc();
         p.0 = a;
         p.1 = b;
-        S::Pair(p)
+        let p = unsafe { &*(p as *const _) };
+        S::Pair(&*p)
+    }
+
+    pub fn intern_symbol(&self, name: &str) -> S<'a> {
+        for s in &*self.symbols.borrow() {
+            if s == name {
+                let s = unsafe { &*(s.as_str() as *const _) };
+                return S::Symbol(s);
+            }
+        }
+
+        let mut syms = self.symbols.borrow_mut();
+
+        syms.push(name.to_string());
+        let s = syms.last().unwrap();
+        let s = unsafe { &*(s.as_str() as *const _) };
+        S::Symbol(s)
     }
 }
 
 const SEGMENT_SIZE: usize = 4000;
 
 struct SegmentStorage<T> {
-    segments: RefCell<Vec<[T; SEGMENT_SIZE]>>,
+    segments: RefCell<Vec<Box<[T; SEGMENT_SIZE]>>>,
     next_free_item: Cell<usize>,
 }
 
@@ -88,7 +108,7 @@ impl<T: Default + Copy> SegmentStorage<T> {
             println!("Allocating new segment");
             self.segments
                 .borrow_mut()
-                .push([T::default(); SEGMENT_SIZE]);
+                .push(Box::new([T::default(); SEGMENT_SIZE]));
             self.next_free_item.set(0);
         }
 
@@ -98,6 +118,40 @@ impl<T: Default + Copy> SegmentStorage<T> {
         let mut segments = self.segments.borrow_mut();
 
         unsafe { &mut *segments.last_mut().unwrap().as_mut_ptr().add(k) }
+    }
+}
+
+impl<'a> SexprFactory for Context<'a> {
+    type Sexpr = S<'a>;
+    type Integer = i64;
+    type Float = f64;
+
+    fn int(&mut self, x: i64) -> Self::Sexpr {
+        S::Num(x)
+    }
+
+    fn float(&mut self, x: f64) -> Self::Sexpr {
+        unimplemented!()
+    }
+
+    fn symbol(&mut self, x: &str) -> Self::Sexpr {
+        self.intern_symbol(x)
+    }
+
+    fn string(&mut self, x: &str) -> Self::Sexpr {
+        unimplemented!()
+    }
+
+    fn list(&mut self, x: Vec<Self::Sexpr>) -> Self::Sexpr {
+        let mut tail = S::Empty;
+        for item in x.into_iter().rev() {
+            tail = self.pair(item, tail)
+        }
+        tail
+    }
+
+    fn pair(&mut self, a: Self::Sexpr, b: Self::Sexpr) -> Self::Sexpr {
+        self.cons(a, b)
     }
 }
 
