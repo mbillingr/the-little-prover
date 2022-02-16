@@ -764,7 +764,7 @@
 
 (defun rewrite/define+ (defs pfs)
   (if (atom pfs)
-      (defs)
+      defs
       (rewrite/define+1 defs
         (rewrite/define defs
           (elem1 (car pfs))
