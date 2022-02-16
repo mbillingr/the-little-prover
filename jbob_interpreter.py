@@ -2,7 +2,7 @@ from functools import lru_cache
 import keyword
 
 from jbob_parser import parse, src_pos
-from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, to_string
+from jbob_runtime import atom, car, cdr, cons, is_null, num, Pair, size, to_string
 
 
 global_env = {}  # runtime store of language-defined functions
@@ -19,6 +19,7 @@ global_env["equal"] = lambda x, y: "t" if x == y else "nil"
 global_env["natp"] = lambda x: "t" if isinstance(x, int) and x >= 0 else "nil"
 global_env["+"] = lambda x, y: num(x) + num(y)
 global_env["<"] = lambda x, y: "t" if num(x) < num(y) else "nil"
+global_env["size"] = size
 
 
 def evaluate(expr, env=None):
