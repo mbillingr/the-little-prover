@@ -11,6 +11,6 @@ dependencies = [
 
 [[package]]
 name = "sexpr_parser"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "140b054cfbfe35f7c034f4495a8fa52053b60fc8d3ffba286315e0f1c6123be7"
+checksum = "e95c757d8818625235980614bab05c9dda15c4dfc499913e361f96c00367ee40"
