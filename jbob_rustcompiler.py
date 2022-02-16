@@ -38,6 +38,8 @@ def analyze_program(stmts):
 
     return [
         "#![allow(non_snake_case)]",
+        "#![allow(unused_variables)]",
+        "",
         "use crate::jbob_runtime::*;",
         "",
         *consts,

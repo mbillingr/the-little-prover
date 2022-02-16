@@ -1,18 +1,8 @@
 pub mod j_bob;
-mod jbob_runtime;
+pub mod jbob_runtime;
 
-use jbob_runtime::{Context, S};
+use jbob_runtime::Context;
 use sexpr_parser::Parser;
-
-macro_rules! sx {
-    (()) => { S::Empty };
-    (($first:tt $($rest:tt)*)) => {{
-        const A: S = sx![$first];
-        const D: S = sx![($($rest)*)];
-        S::Pair(&(A, D))
-    }};
-    ($x:expr) => { S::Symbol($x) };
-}
 
 fn main() {
     let mut ctx = Context::new();

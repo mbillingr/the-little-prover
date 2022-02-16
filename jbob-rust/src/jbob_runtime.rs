@@ -1,5 +1,5 @@
 use sexpr_parser::SexprFactory;
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum S<'a> {
@@ -51,22 +51,21 @@ impl std::fmt::Debug for S<'_> {
 }
 
 pub struct Context<'a> {
-    pairs: SegmentStorage<P<'a>>,
+    pairs: RefCell<SegmentStorage<P<'a>>>,
     symbols: RefCell<Vec<String>>,
 }
 
 impl<'a> Context<'a> {
     pub fn new() -> Self {
         Context {
-            pairs: SegmentStorage::new(),
+            pairs: RefCell::new(SegmentStorage::new(4000)),
             symbols: RefCell::new(vec![]),
         }
     }
 
     pub fn cons(&self, a: S<'a>, b: S<'a>) -> S<'a> {
-        let p = self.pairs.alloc();
-        p.0 = a;
-        p.1 = b;
+        let mut pair_storage = self.pairs.borrow_mut();
+        let p = pair_storage.alloc((a, b));
         let p = unsafe { &*(p as *const _) };
         S::Pair(&*p)
     }
@@ -88,36 +87,30 @@ impl<'a> Context<'a> {
     }
 }
 
-const SEGMENT_SIZE: usize = 4000;
-
 struct SegmentStorage<T> {
-    segments: RefCell<Vec<Box<[T; SEGMENT_SIZE]>>>,
-    next_free_item: Cell<usize>,
+    current_segment: Vec<T>,
+    segments: Vec<Vec<T>>,
 }
 
 impl<T: Default + Copy> SegmentStorage<T> {
-    pub fn new() -> Self {
+    pub fn new(segment_size: usize) -> Self {
         SegmentStorage {
-            segments: RefCell::new(vec![]),
-            next_free_item: Cell::new(SEGMENT_SIZE + 1),
+            current_segment: Vec::with_capacity(segment_size),
+            segments: vec![],
         }
     }
 
-    pub fn alloc(&self) -> &mut T {
-        if self.next_free_item.get() >= SEGMENT_SIZE {
+    pub fn alloc(&mut self, value: T) -> &mut T {
+        let segment_size = self.current_segment.capacity();
+        if self.current_segment.len() >= segment_size {
             println!("Allocating new segment");
-            self.segments
-                .borrow_mut()
-                .push(Box::new([T::default(); SEGMENT_SIZE]));
-            self.next_free_item.set(0);
+            let new_segment = Vec::with_capacity(segment_size);
+            let old_segment = std::mem::replace(&mut self.current_segment, new_segment);
+            self.segments.push(old_segment);
         }
 
-        let k = self.next_free_item.get();
-        self.next_free_item.set(k + 1);
-
-        let mut segments = self.segments.borrow_mut();
-
-        unsafe { &mut *segments.last_mut().unwrap().as_mut_ptr().add(k) }
+        self.current_segment.push(value);
+        self.current_segment.last_mut().unwrap()
     }
 }
 
@@ -130,7 +123,7 @@ impl<'a> SexprFactory for Context<'a> {
         S::Num(x)
     }
 
-    fn float(&mut self, x: f64) -> Self::Sexpr {
+    fn float(&mut self, _: f64) -> Self::Sexpr {
         unimplemented!()
     }
 
@@ -138,7 +131,7 @@ impl<'a> SexprFactory for Context<'a> {
         self.intern_symbol(x)
     }
 
-    fn string(&mut self, x: &str) -> Self::Sexpr {
+    fn string(&mut self, _: &str) -> Self::Sexpr {
         unimplemented!()
     }
 
@@ -211,11 +204,11 @@ pub fn natp<'a>(_: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn _plus<'a>(context: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
+pub fn _plus<'a>(_: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     return S::Num(raw_num(a) + raw_num(b));
 }
 
-pub fn _lt<'a>(context: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
+pub fn _lt<'a>(_: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     if raw_num(a) < raw_num(b) {
         C_T
     } else {
@@ -223,6 +216,6 @@ pub fn _lt<'a>(context: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     }
 }
 
-pub fn size<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn size<'a>(_context: &'a Context<'a>, _x: S<'a>) -> S<'a> {
     todo!()
 }
