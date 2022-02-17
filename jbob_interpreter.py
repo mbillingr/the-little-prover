@@ -87,7 +87,7 @@ def analyze_application(fexpr, args):
     @AddErrorContext(fexpr)
     def the_application(env):
         f = global_env[fexpr]
-        args = map(lambda a: a(env), iter(arg_execs))
+        args = list(map(lambda a: a(env), iter(arg_execs)))
         return f(*args)
 
     return the_application

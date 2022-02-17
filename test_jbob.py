@@ -12,7 +12,7 @@ def assert_same_value(expr1, expr2):
 def test_jbob(testsuite):
     with open(testsuite) as fd:
         ast = parse(fd.read())
-    evaluate_testsuite(ast)
+    evaluate_testsuite({}, ast)
 
 
 class TestRecess:
@@ -177,10 +177,10 @@ class TestRecess:
                      ((dethm first-of-pair (a b) 
                         (equal (first-of (pair a b)) a))
                       nil
-                     ((1 1) (pair a b))
-                     ((1) (first-of (cons a (cons b '()))))
-                     ((1) (car/cons a (cons b '())))
-                     (() (equal-same a))))))"""
+                      ((1 1) (pair a b))
+                      ((1) (first-of (cons a (cons b '()))))
+                      ((1) (car/cons a (cons b '())))
+                      (() (equal-same a))))))"""
         )
         yield
         undefine("prelude+first-of-pair")
