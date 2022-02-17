@@ -103,7 +103,7 @@ impl<T: Default + Copy> SegmentStorage<T> {
     pub fn alloc(&mut self, value: T) -> &mut T {
         let segment_size = self.current_segment.capacity();
         if self.current_segment.len() >= segment_size {
-            println!("Allocating new segment");
+            eprintln!("Allocating new segment");
             let new_segment = Vec::with_capacity(segment_size);
             let old_segment = std::mem::replace(&mut self.current_segment, new_segment);
             self.segments.push(old_segment);
