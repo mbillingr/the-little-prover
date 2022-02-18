@@ -48,356 +48,346 @@ const C_CAR_SLASH_CONS: S<'static> = S::Symbol("car/cons");
 const C_ATOM_SLASH_CONS: S<'static> = S::Symbol("atom/cons");
 const C_STAR_INDUCTION: S<'static> = S::Symbol("star-induction");
 const C_LIST_INDUCTION: S<'static> = S::Symbol("list-induction");
-const C_PAIR_0: S<'static> = S::Pair(&(C__LT, S::Empty));
-const C_PAIR_1: S<'static> = S::Pair(&(C__PLUS, C_PAIR_0));
-const C_PAIR_2: S<'static> = S::Pair(&(C_SIZE, C_PAIR_1));
-const C_PAIR_3: S<'static> = S::Pair(&(C_NATP, C_PAIR_2));
-const C_PAIR_4: S<'static> = S::Pair(&(C_CONS, C_PAIR_3));
-const C_PAIR_5: S<'static> = S::Pair(&(C_CDR, C_PAIR_4));
-const C_PAIR_6: S<'static> = S::Pair(&(C_CAR, C_PAIR_5));
-const C_PAIR_7: S<'static> = S::Pair(&(C_ATOM, C_PAIR_6));
-const C_PAIR_8: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_7));
-const C_PAIR_9: S<'static> = S::Pair(&(C_SIZE, S::Empty));
-const C_PAIR_10: S<'static> = S::Pair(&(C_NATP, C_PAIR_9));
-const C_PAIR_11: S<'static> = S::Pair(&(C_CDR, C_PAIR_10));
-const C_PAIR_12: S<'static> = S::Pair(&(C_CAR, C_PAIR_11));
-const C_PAIR_13: S<'static> = S::Pair(&(C_ATOM, C_PAIR_12));
-const C_PAIR_14: S<'static> = S::Pair(&(C_X, S::Empty));
-const C_PAIR_15: S<'static> = S::Pair(&(C_CONS, C_PAIR_1));
-const C_PAIR_16: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_15));
-const C_PAIR_17: S<'static> = S::Pair(&(C_Y, S::Empty));
-const C_PAIR_18: S<'static> = S::Pair(&(C_X, C_PAIR_17));
-const C_PAIR_19: S<'static> = S::Pair(&(C_E, S::Empty));
-const C_PAIR_20: S<'static> = S::Pair(&(C_A, C_PAIR_19));
-const C_PAIR_21: S<'static> = S::Pair(&(C_Q, C_PAIR_20));
-const C_PAIR_22: S<'static> = S::Pair(&(C_T, S::Empty));
-const C_PAIR_23: S<'static> = S::Pair(&(C_QUOTE, C_PAIR_22));
-const C_PAIR_24: S<'static> = S::Pair(&(C_PAIR_23, S::Empty));
-const C_PAIR_25: S<'static> = S::Pair(&(S::Num(0), S::Empty));
-const C_PAIR_26: S<'static> = S::Pair(&(C_QUOTE, C_PAIR_25));
-const C_PAIR_27: S<'static> = S::Pair(&(C_PAIR_26, C_PAIR_14));
-const C_PAIR_28: S<'static> = S::Pair(&(C__PLUS, C_PAIR_27));
-const C_PAIR_29: S<'static> = S::Pair(&(C_PAIR_28, C_PAIR_14));
-const C_PAIR_30: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_29));
-const C_PAIR_31: S<'static> = S::Pair(&(C_PAIR_30, C_PAIR_24));
-const C_PAIR_32: S<'static> = S::Pair(&(C_NATP, C_PAIR_14));
-const C_PAIR_33: S<'static> = S::Pair(&(C_PAIR_32, C_PAIR_31));
-const C_PAIR_34: S<'static> = S::Pair(&(C_IF, C_PAIR_33));
-const C_PAIR_35: S<'static> = S::Pair(&(C_PAIR_34, S::Empty));
-const C_PAIR_36: S<'static> = S::Pair(&(C_PAIR_14, C_PAIR_35));
-const C_PAIR_37: S<'static> = S::Pair(&(C_IDENTITY__PLUS, C_PAIR_36));
-const C_PAIR_38: S<'static> = S::Pair(&(C_DETHM, C_PAIR_37));
-const C_PAIR_39: S<'static> = S::Pair(&(C_PAIR_38, S::Empty));
-const C_PAIR_40: S<'static> = S::Pair(&(C__LT, C_PAIR_18));
-const C_PAIR_41: S<'static> = S::Pair(&(C_PAIR_40, S::Empty));
-const C_PAIR_42: S<'static> = S::Pair(&(C_Z, S::Empty));
-const C_PAIR_43: S<'static> = S::Pair(&(C_Y, C_PAIR_42));
-const C_PAIR_44: S<'static> = S::Pair(&(C__PLUS, C_PAIR_43));
-const C_PAIR_45: S<'static> = S::Pair(&(C_PAIR_44, S::Empty));
-const C_PAIR_46: S<'static> = S::Pair(&(C_X, C_PAIR_42));
-const C_PAIR_47: S<'static> = S::Pair(&(C__PLUS, C_PAIR_46));
-const C_PAIR_48: S<'static> = S::Pair(&(C_PAIR_47, C_PAIR_45));
-const C_PAIR_49: S<'static> = S::Pair(&(C__LT, C_PAIR_48));
-const C_PAIR_50: S<'static> = S::Pair(&(C_PAIR_49, C_PAIR_41));
-const C_PAIR_51: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_50));
-const C_PAIR_52: S<'static> = S::Pair(&(C_PAIR_51, S::Empty));
-const C_PAIR_53: S<'static> = S::Pair(&(C_X, C_PAIR_43));
-const C_PAIR_54: S<'static> = S::Pair(&(C_PAIR_53, C_PAIR_52));
-const C_PAIR_55: S<'static> = S::Pair(&(C_COMMON_ADDENDS__LT, C_PAIR_54));
-const C_PAIR_56: S<'static> = S::Pair(&(C_DETHM, C_PAIR_55));
-const C_PAIR_57: S<'static> = S::Pair(&(C_PAIR_56, C_PAIR_39));
-const C_PAIR_58: S<'static> = S::Pair(&(C__PLUS, C_PAIR_18));
-const C_PAIR_59: S<'static> = S::Pair(&(C_PAIR_58, S::Empty));
-const C_PAIR_60: S<'static> = S::Pair(&(C_PAIR_26, C_PAIR_59));
-const C_PAIR_61: S<'static> = S::Pair(&(C__LT, C_PAIR_60));
-const C_PAIR_62: S<'static> = S::Pair(&(C_PAIR_61, C_PAIR_24));
-const C_PAIR_63: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_62));
-const C_PAIR_64: S<'static> = S::Pair(&(C_PAIR_63, C_PAIR_24));
-const C_PAIR_65: S<'static> = S::Pair(&(C_PAIR_26, C_PAIR_17));
-const C_PAIR_66: S<'static> = S::Pair(&(C__LT, C_PAIR_65));
-const C_PAIR_67: S<'static> = S::Pair(&(C_PAIR_66, C_PAIR_64));
-const C_PAIR_68: S<'static> = S::Pair(&(C_IF, C_PAIR_67));
-const C_PAIR_69: S<'static> = S::Pair(&(C_PAIR_68, C_PAIR_24));
-const C_PAIR_70: S<'static> = S::Pair(&(C__LT, C_PAIR_27));
-const C_PAIR_71: S<'static> = S::Pair(&(C_PAIR_70, C_PAIR_69));
-const C_PAIR_72: S<'static> = S::Pair(&(C_IF, C_PAIR_71));
-const C_PAIR_73: S<'static> = S::Pair(&(C_PAIR_72, S::Empty));
-const C_PAIR_74: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_73));
-const C_PAIR_75: S<'static> = S::Pair(&(C_POSITIVES__PLUS, C_PAIR_74));
-const C_PAIR_76: S<'static> = S::Pair(&(C_DETHM, C_PAIR_75));
-const C_PAIR_77: S<'static> = S::Pair(&(C_PAIR_76, C_PAIR_57));
-const C_PAIR_78: S<'static> = S::Pair(&(C_NATP, C_PAIR_59));
-const C_PAIR_79: S<'static> = S::Pair(&(C_PAIR_78, C_PAIR_24));
-const C_PAIR_80: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_79));
-const C_PAIR_81: S<'static> = S::Pair(&(C_PAIR_80, C_PAIR_24));
-const C_PAIR_82: S<'static> = S::Pair(&(C_NATP, C_PAIR_17));
-const C_PAIR_83: S<'static> = S::Pair(&(C_PAIR_82, C_PAIR_81));
-const C_PAIR_84: S<'static> = S::Pair(&(C_IF, C_PAIR_83));
-const C_PAIR_85: S<'static> = S::Pair(&(C_PAIR_84, C_PAIR_24));
-const C_PAIR_86: S<'static> = S::Pair(&(C_PAIR_32, C_PAIR_85));
-const C_PAIR_87: S<'static> = S::Pair(&(C_IF, C_PAIR_86));
-const C_PAIR_88: S<'static> = S::Pair(&(C_PAIR_87, S::Empty));
-const C_PAIR_89: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_88));
-const C_PAIR_90: S<'static> = S::Pair(&(C_NATP_SLASH__PLUS, C_PAIR_89));
-const C_PAIR_91: S<'static> = S::Pair(&(C_DETHM, C_PAIR_90));
-const C_PAIR_92: S<'static> = S::Pair(&(C_PAIR_91, C_PAIR_77));
-const C_PAIR_93: S<'static> = S::Pair(&(C_Y, C_PAIR_14));
-const C_PAIR_94: S<'static> = S::Pair(&(C__PLUS, C_PAIR_93));
-const C_PAIR_95: S<'static> = S::Pair(&(C_PAIR_94, S::Empty));
-const C_PAIR_96: S<'static> = S::Pair(&(C_PAIR_58, C_PAIR_95));
-const C_PAIR_97: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_96));
-const C_PAIR_98: S<'static> = S::Pair(&(C_PAIR_97, S::Empty));
-const C_PAIR_99: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_98));
-const C_PAIR_100: S<'static> = S::Pair(&(C_COMMUTE__PLUS, C_PAIR_99));
-const C_PAIR_101: S<'static> = S::Pair(&(C_DETHM, C_PAIR_100));
-const C_PAIR_102: S<'static> = S::Pair(&(C_PAIR_101, C_PAIR_92));
-const C_PAIR_103: S<'static> = S::Pair(&(C_C, S::Empty));
-const C_PAIR_104: S<'static> = S::Pair(&(C_B, C_PAIR_103));
-const C_PAIR_105: S<'static> = S::Pair(&(C__PLUS, C_PAIR_104));
-const C_PAIR_106: S<'static> = S::Pair(&(C_PAIR_105, S::Empty));
-const C_PAIR_107: S<'static> = S::Pair(&(C_A, C_PAIR_106));
-const C_PAIR_108: S<'static> = S::Pair(&(C__PLUS, C_PAIR_107));
-const C_PAIR_109: S<'static> = S::Pair(&(C_PAIR_108, S::Empty));
-const C_PAIR_110: S<'static> = S::Pair(&(C_B, S::Empty));
-const C_PAIR_111: S<'static> = S::Pair(&(C_A, C_PAIR_110));
-const C_PAIR_112: S<'static> = S::Pair(&(C__PLUS, C_PAIR_111));
-const C_PAIR_113: S<'static> = S::Pair(&(C_PAIR_112, C_PAIR_103));
-const C_PAIR_114: S<'static> = S::Pair(&(C__PLUS, C_PAIR_113));
-const C_PAIR_115: S<'static> = S::Pair(&(C_PAIR_114, C_PAIR_109));
-const C_PAIR_116: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_115));
-const C_PAIR_117: S<'static> = S::Pair(&(C_PAIR_116, S::Empty));
-const C_PAIR_118: S<'static> = S::Pair(&(C_A, C_PAIR_104));
-const C_PAIR_119: S<'static> = S::Pair(&(C_PAIR_118, C_PAIR_117));
-const C_PAIR_120: S<'static> = S::Pair(&(C_ASSOCIATE__PLUS, C_PAIR_119));
-const C_PAIR_121: S<'static> = S::Pair(&(C_DETHM, C_PAIR_120));
-const C_PAIR_122: S<'static> = S::Pair(&(C_PAIR_121, C_PAIR_102));
-const C_PAIR_123: S<'static> = S::Pair(&(C_SIZE, C_PAIR_14));
-const C_PAIR_124: S<'static> = S::Pair(&(C_PAIR_123, S::Empty));
-const C_PAIR_125: S<'static> = S::Pair(&(C_CDR, C_PAIR_14));
-const C_PAIR_126: S<'static> = S::Pair(&(C_PAIR_125, S::Empty));
-const C_PAIR_127: S<'static> = S::Pair(&(C_SIZE, C_PAIR_126));
-const C_PAIR_128: S<'static> = S::Pair(&(C_PAIR_127, C_PAIR_124));
-const C_PAIR_129: S<'static> = S::Pair(&(C__LT, C_PAIR_128));
-const C_PAIR_130: S<'static> = S::Pair(&(C_PAIR_129, C_PAIR_24));
-const C_PAIR_131: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_130));
-const C_PAIR_132: S<'static> = S::Pair(&(C_PAIR_131, S::Empty));
-const C_PAIR_133: S<'static> = S::Pair(&(C_PAIR_23, C_PAIR_132));
-const C_PAIR_134: S<'static> = S::Pair(&(C_ATOM, C_PAIR_14));
-const C_PAIR_135: S<'static> = S::Pair(&(C_PAIR_134, C_PAIR_133));
-const C_PAIR_136: S<'static> = S::Pair(&(C_IF, C_PAIR_135));
-const C_PAIR_137: S<'static> = S::Pair(&(C_PAIR_136, S::Empty));
-const C_PAIR_138: S<'static> = S::Pair(&(C_PAIR_14, C_PAIR_137));
-const C_PAIR_139: S<'static> = S::Pair(&(C_SIZE_SLASH_CDR, C_PAIR_138));
-const C_PAIR_140: S<'static> = S::Pair(&(C_DETHM, C_PAIR_139));
-const C_PAIR_141: S<'static> = S::Pair(&(C_PAIR_140, C_PAIR_122));
-const C_PAIR_142: S<'static> = S::Pair(&(C_CAR, C_PAIR_14));
-const C_PAIR_143: S<'static> = S::Pair(&(C_PAIR_142, S::Empty));
-const C_PAIR_144: S<'static> = S::Pair(&(C_SIZE, C_PAIR_143));
-const C_PAIR_145: S<'static> = S::Pair(&(C_PAIR_144, C_PAIR_124));
-const C_PAIR_146: S<'static> = S::Pair(&(C__LT, C_PAIR_145));
-const C_PAIR_147: S<'static> = S::Pair(&(C_PAIR_146, C_PAIR_24));
-const C_PAIR_148: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_147));
-const C_PAIR_149: S<'static> = S::Pair(&(C_PAIR_148, S::Empty));
-const C_PAIR_150: S<'static> = S::Pair(&(C_PAIR_23, C_PAIR_149));
-const C_PAIR_151: S<'static> = S::Pair(&(C_PAIR_134, C_PAIR_150));
-const C_PAIR_152: S<'static> = S::Pair(&(C_IF, C_PAIR_151));
-const C_PAIR_153: S<'static> = S::Pair(&(C_PAIR_152, S::Empty));
-const C_PAIR_154: S<'static> = S::Pair(&(C_PAIR_14, C_PAIR_153));
-const C_PAIR_155: S<'static> = S::Pair(&(C_SIZE_SLASH_CAR, C_PAIR_154));
-const C_PAIR_156: S<'static> = S::Pair(&(C_DETHM, C_PAIR_155));
-const C_PAIR_157: S<'static> = S::Pair(&(C_PAIR_156, C_PAIR_141));
-const C_PAIR_158: S<'static> = S::Pair(&(C_NATP, C_PAIR_124));
-const C_PAIR_159: S<'static> = S::Pair(&(C_PAIR_158, C_PAIR_24));
-const C_PAIR_160: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_159));
-const C_PAIR_161: S<'static> = S::Pair(&(C_PAIR_160, S::Empty));
-const C_PAIR_162: S<'static> = S::Pair(&(C_PAIR_14, C_PAIR_161));
-const C_PAIR_163: S<'static> = S::Pair(&(C_NATP_SLASH_SIZE, C_PAIR_162));
-const C_PAIR_164: S<'static> = S::Pair(&(C_DETHM, C_PAIR_163));
-const C_PAIR_165: S<'static> = S::Pair(&(C_PAIR_164, C_PAIR_157));
-const C_PAIR_166: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_18));
-const C_PAIR_167: S<'static> = S::Pair(&(C_PAIR_166, C_PAIR_24));
-const C_PAIR_168: S<'static> = S::Pair(&(C_PAIR_166, C_PAIR_167));
-const C_PAIR_169: S<'static> = S::Pair(&(C_IF, C_PAIR_168));
-const C_PAIR_170: S<'static> = S::Pair(&(C_PAIR_169, S::Empty));
-const C_PAIR_171: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_170));
-const C_PAIR_172: S<'static> = S::Pair(&(C_EQUAL_IF, C_PAIR_171));
-const C_PAIR_173: S<'static> = S::Pair(&(C_DETHM, C_PAIR_172));
-const C_PAIR_174: S<'static> = S::Pair(&(C_PAIR_173, C_PAIR_165));
-const C_PAIR_175: S<'static> = S::Pair(&(C_PAIR_142, C_PAIR_126));
-const C_PAIR_176: S<'static> = S::Pair(&(C_CONS, C_PAIR_175));
-const C_PAIR_177: S<'static> = S::Pair(&(C_PAIR_176, C_PAIR_14));
-const C_PAIR_178: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_177));
-const C_PAIR_179: S<'static> = S::Pair(&(C_PAIR_178, S::Empty));
-const C_PAIR_180: S<'static> = S::Pair(&(C_PAIR_23, C_PAIR_179));
-const C_PAIR_181: S<'static> = S::Pair(&(C_PAIR_134, C_PAIR_180));
-const C_PAIR_182: S<'static> = S::Pair(&(C_IF, C_PAIR_181));
-const C_PAIR_183: S<'static> = S::Pair(&(C_PAIR_182, S::Empty));
-const C_PAIR_184: S<'static> = S::Pair(&(C_PAIR_14, C_PAIR_183));
-const C_PAIR_185: S<'static> = S::Pair(&(C_CONS_SLASH_CAR_PLUS_CDR, C_PAIR_184));
-const C_PAIR_186: S<'static> = S::Pair(&(C_DETHM, C_PAIR_185));
-const C_PAIR_187: S<'static> = S::Pair(&(C_PAIR_186, C_PAIR_174));
-const C_PAIR_188: S<'static> = S::Pair(&(C_IF, C_PAIR_53));
-const C_PAIR_189: S<'static> = S::Pair(&(C_PAIR_188, C_PAIR_17));
-const C_PAIR_190: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_189));
-const C_PAIR_191: S<'static> = S::Pair(&(C_PAIR_190, C_PAIR_24));
-const C_PAIR_192: S<'static> = S::Pair(&(C_X, C_PAIR_191));
-const C_PAIR_193: S<'static> = S::Pair(&(C_IF, C_PAIR_192));
-const C_PAIR_194: S<'static> = S::Pair(&(C_PAIR_193, S::Empty));
-const C_PAIR_195: S<'static> = S::Pair(&(C_PAIR_53, C_PAIR_194));
-const C_PAIR_196: S<'static> = S::Pair(&(C_IF_NEST_A, C_PAIR_195));
-const C_PAIR_197: S<'static> = S::Pair(&(C_DETHM, C_PAIR_196));
-const C_PAIR_198: S<'static> = S::Pair(&(C_PAIR_197, C_PAIR_187));
-const C_PAIR_199: S<'static> = S::Pair(&(C_PAIR_188, C_PAIR_42));
-const C_PAIR_200: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_199));
-const C_PAIR_201: S<'static> = S::Pair(&(C_PAIR_200, S::Empty));
-const C_PAIR_202: S<'static> = S::Pair(&(C_PAIR_23, C_PAIR_201));
-const C_PAIR_203: S<'static> = S::Pair(&(C_X, C_PAIR_202));
-const C_PAIR_204: S<'static> = S::Pair(&(C_IF, C_PAIR_203));
-const C_PAIR_205: S<'static> = S::Pair(&(C_PAIR_204, S::Empty));
-const C_PAIR_206: S<'static> = S::Pair(&(C_PAIR_53, C_PAIR_205));
-const C_PAIR_207: S<'static> = S::Pair(&(C_IF_NEST_E, C_PAIR_206));
-const C_PAIR_208: S<'static> = S::Pair(&(C_DETHM, C_PAIR_207));
-const C_PAIR_209: S<'static> = S::Pair(&(C_PAIR_208, C_PAIR_198));
-const C_PAIR_210: S<'static> = S::Pair(&(C_NIL, S::Empty));
-const C_PAIR_211: S<'static> = S::Pair(&(C_QUOTE, C_PAIR_210));
-const C_PAIR_212: S<'static> = S::Pair(&(C_PAIR_211, C_PAIR_18));
-const C_PAIR_213: S<'static> = S::Pair(&(C_IF, C_PAIR_212));
-const C_PAIR_214: S<'static> = S::Pair(&(C_PAIR_213, C_PAIR_17));
-const C_PAIR_215: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_214));
-const C_PAIR_216: S<'static> = S::Pair(&(C_PAIR_215, S::Empty));
-const C_PAIR_217: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_216));
-const C_PAIR_218: S<'static> = S::Pair(&(C_IF_FALSE, C_PAIR_217));
-const C_PAIR_219: S<'static> = S::Pair(&(C_DETHM, C_PAIR_218));
-const C_PAIR_220: S<'static> = S::Pair(&(C_PAIR_219, C_PAIR_209));
-const C_PAIR_221: S<'static> = S::Pair(&(C_PAIR_23, C_PAIR_18));
-const C_PAIR_222: S<'static> = S::Pair(&(C_IF, C_PAIR_221));
-const C_PAIR_223: S<'static> = S::Pair(&(C_PAIR_222, C_PAIR_14));
-const C_PAIR_224: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_223));
-const C_PAIR_225: S<'static> = S::Pair(&(C_PAIR_224, S::Empty));
-const C_PAIR_226: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_225));
-const C_PAIR_227: S<'static> = S::Pair(&(C_IF_TRUE, C_PAIR_226));
-const C_PAIR_228: S<'static> = S::Pair(&(C_DETHM, C_PAIR_227));
-const C_PAIR_229: S<'static> = S::Pair(&(C_PAIR_228, C_PAIR_220));
-const C_PAIR_230: S<'static> = S::Pair(&(C_Y, C_PAIR_17));
-const C_PAIR_231: S<'static> = S::Pair(&(C_X, C_PAIR_230));
-const C_PAIR_232: S<'static> = S::Pair(&(C_IF, C_PAIR_231));
-const C_PAIR_233: S<'static> = S::Pair(&(C_PAIR_232, C_PAIR_17));
-const C_PAIR_234: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_233));
-const C_PAIR_235: S<'static> = S::Pair(&(C_PAIR_234, S::Empty));
-const C_PAIR_236: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_235));
-const C_PAIR_237: S<'static> = S::Pair(&(C_IF_SAME, C_PAIR_236));
-const C_PAIR_238: S<'static> = S::Pair(&(C_DETHM, C_PAIR_237));
-const C_PAIR_239: S<'static> = S::Pair(&(C_PAIR_238, C_PAIR_229));
-const C_PAIR_240: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_93));
-const C_PAIR_241: S<'static> = S::Pair(&(C_PAIR_240, S::Empty));
-const C_PAIR_242: S<'static> = S::Pair(&(C_PAIR_166, C_PAIR_241));
-const C_PAIR_243: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_242));
-const C_PAIR_244: S<'static> = S::Pair(&(C_PAIR_243, S::Empty));
-const C_PAIR_245: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_244));
-const C_PAIR_246: S<'static> = S::Pair(&(C_EQUAL_SWAP, C_PAIR_245));
-const C_PAIR_247: S<'static> = S::Pair(&(C_DETHM, C_PAIR_246));
-const C_PAIR_248: S<'static> = S::Pair(&(C_PAIR_247, C_PAIR_239));
-const C_PAIR_249: S<'static> = S::Pair(&(C_X, C_PAIR_14));
-const C_PAIR_250: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_249));
-const C_PAIR_251: S<'static> = S::Pair(&(C_PAIR_250, C_PAIR_24));
-const C_PAIR_252: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_251));
-const C_PAIR_253: S<'static> = S::Pair(&(C_PAIR_252, S::Empty));
-const C_PAIR_254: S<'static> = S::Pair(&(C_PAIR_14, C_PAIR_253));
-const C_PAIR_255: S<'static> = S::Pair(&(C_EQUAL_SAME, C_PAIR_254));
-const C_PAIR_256: S<'static> = S::Pair(&(C_DETHM, C_PAIR_255));
-const C_PAIR_257: S<'static> = S::Pair(&(C_PAIR_256, C_PAIR_248));
-const C_PAIR_258: S<'static> = S::Pair(&(C_CONS, C_PAIR_18));
-const C_PAIR_259: S<'static> = S::Pair(&(C_PAIR_258, S::Empty));
-const C_PAIR_260: S<'static> = S::Pair(&(C_CDR, C_PAIR_259));
-const C_PAIR_261: S<'static> = S::Pair(&(C_PAIR_260, C_PAIR_17));
-const C_PAIR_262: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_261));
-const C_PAIR_263: S<'static> = S::Pair(&(C_PAIR_262, S::Empty));
-const C_PAIR_264: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_263));
-const C_PAIR_265: S<'static> = S::Pair(&(C_CDR_SLASH_CONS, C_PAIR_264));
-const C_PAIR_266: S<'static> = S::Pair(&(C_DETHM, C_PAIR_265));
-const C_PAIR_267: S<'static> = S::Pair(&(C_PAIR_266, C_PAIR_257));
-const C_PAIR_268: S<'static> = S::Pair(&(C_CAR, C_PAIR_259));
-const C_PAIR_269: S<'static> = S::Pair(&(C_PAIR_268, C_PAIR_14));
-const C_PAIR_270: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_269));
-const C_PAIR_271: S<'static> = S::Pair(&(C_PAIR_270, S::Empty));
-const C_PAIR_272: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_271));
-const C_PAIR_273: S<'static> = S::Pair(&(C_CAR_SLASH_CONS, C_PAIR_272));
-const C_PAIR_274: S<'static> = S::Pair(&(C_DETHM, C_PAIR_273));
-const C_PAIR_275: S<'static> = S::Pair(&(C_PAIR_274, C_PAIR_267));
-const C_PAIR_276: S<'static> = S::Pair(&(C_PAIR_211, S::Empty));
-const C_PAIR_277: S<'static> = S::Pair(&(C_ATOM, C_PAIR_259));
-const C_PAIR_278: S<'static> = S::Pair(&(C_PAIR_277, C_PAIR_276));
-const C_PAIR_279: S<'static> = S::Pair(&(C_EQUAL, C_PAIR_278));
-const C_PAIR_280: S<'static> = S::Pair(&(C_PAIR_279, S::Empty));
-const C_PAIR_281: S<'static> = S::Pair(&(C_PAIR_18, C_PAIR_280));
-const C_PAIR_282: S<'static> = S::Pair(&(C_ATOM_SLASH_CONS, C_PAIR_281));
-const C_PAIR_283: S<'static> = S::Pair(&(C_DETHM, C_PAIR_282));
-const C_PAIR_284: S<'static> = S::Pair(&(C_PAIR_283, C_PAIR_275));
-const C_PAIR_285: S<'static> = S::Pair(&(C_PAIR_23, C_PAIR_276));
-const C_PAIR_286: S<'static> = S::Pair(&(C_IF_TRUE, C_PAIR_285));
-const C_PAIR_287: S<'static> = S::Pair(&(C_PAIR_286, S::Empty));
-const C_PAIR_288: S<'static> = S::Pair(&(S::Empty, C_PAIR_287));
-const C_PAIR_289: S<'static> = S::Pair(&(C_PAIR_288, S::Empty));
-const C_PAIR_290: S<'static> = S::Pair(&(C_NATP_SLASH_SIZE, C_PAIR_14));
-const C_PAIR_291: S<'static> = S::Pair(&(C_PAIR_290, S::Empty));
-const C_PAIR_292: S<'static> = S::Pair(&(C_Q, S::Empty));
-const C_PAIR_293: S<'static> = S::Pair(&(C_PAIR_292, C_PAIR_291));
-const C_PAIR_294: S<'static> = S::Pair(&(C_PAIR_293, C_PAIR_289));
-const C_PAIR_295: S<'static> = S::Pair(&(C_PAIR_134, C_PAIR_24));
-const C_PAIR_296: S<'static> = S::Pair(&(C_IF_SAME, C_PAIR_295));
-const C_PAIR_297: S<'static> = S::Pair(&(C_PAIR_296, S::Empty));
-const C_PAIR_298: S<'static> = S::Pair(&(C_A, S::Empty));
-const C_PAIR_299: S<'static> = S::Pair(&(C_PAIR_298, C_PAIR_297));
-const C_PAIR_300: S<'static> = S::Pair(&(C_PAIR_299, C_PAIR_294));
-const C_PAIR_301: S<'static> = S::Pair(&(C_PAIR_20, C_PAIR_287));
-const C_PAIR_302: S<'static> = S::Pair(&(C_PAIR_301, C_PAIR_300));
-const C_PAIR_303: S<'static> = S::Pair(&(C_SIZE_SLASH_CAR, C_PAIR_14));
-const C_PAIR_304: S<'static> = S::Pair(&(C_PAIR_303, S::Empty));
-const C_PAIR_305: S<'static> = S::Pair(&(C_E, C_PAIR_292));
-const C_PAIR_306: S<'static> = S::Pair(&(C_A, C_PAIR_305));
-const C_PAIR_307: S<'static> = S::Pair(&(C_PAIR_306, C_PAIR_304));
-const C_PAIR_308: S<'static> = S::Pair(&(C_PAIR_307, C_PAIR_302));
-const C_PAIR_309: S<'static> = S::Pair(&(C_SIZE_SLASH_CDR, C_PAIR_14));
-const C_PAIR_310: S<'static> = S::Pair(&(C_PAIR_309, S::Empty));
-const C_PAIR_311: S<'static> = S::Pair(&(C_E, C_PAIR_298));
-const C_PAIR_312: S<'static> = S::Pair(&(C_A, C_PAIR_311));
-const C_PAIR_313: S<'static> = S::Pair(&(C_PAIR_312, C_PAIR_310));
-const C_PAIR_314: S<'static> = S::Pair(&(C_PAIR_313, C_PAIR_308));
-const C_PAIR_315: S<'static> = S::Pair(&(C_PAIR_123, C_PAIR_314));
-const C_PAIR_316: S<'static> = S::Pair(&(C_STAR_INDUCTION, C_PAIR_126));
-const C_PAIR_317: S<'static> = S::Pair(&(C_PAIR_316, S::Empty));
-const C_PAIR_318: S<'static> = S::Pair(&(C_STAR_INDUCTION, C_PAIR_143));
-const C_PAIR_319: S<'static> = S::Pair(&(C_PAIR_318, C_PAIR_317));
-const C_PAIR_320: S<'static> = S::Pair(&(C_CONS, C_PAIR_319));
-const C_PAIR_321: S<'static> = S::Pair(&(C_PAIR_320, S::Empty));
-const C_PAIR_322: S<'static> = S::Pair(&(C_X, C_PAIR_321));
-const C_PAIR_323: S<'static> = S::Pair(&(C_PAIR_134, C_PAIR_322));
-const C_PAIR_324: S<'static> = S::Pair(&(C_IF, C_PAIR_323));
-const C_PAIR_325: S<'static> = S::Pair(&(C_PAIR_324, S::Empty));
-const C_PAIR_326: S<'static> = S::Pair(&(C_PAIR_14, C_PAIR_325));
-const C_PAIR_327: S<'static> = S::Pair(&(C_STAR_INDUCTION, C_PAIR_326));
-const C_PAIR_328: S<'static> = S::Pair(&(C_DEFUN, C_PAIR_327));
-const C_PAIR_329: S<'static> = S::Pair(&(C_PAIR_328, C_PAIR_315));
-const C_PAIR_330: S<'static> = S::Pair(&(C_PAIR_329, S::Empty));
-const C_PAIR_331: S<'static> = S::Pair(&(C_PAIR_20, C_PAIR_310));
-const C_PAIR_332: S<'static> = S::Pair(&(C_PAIR_331, C_PAIR_300));
-const C_PAIR_333: S<'static> = S::Pair(&(C_PAIR_123, C_PAIR_332));
-const C_PAIR_334: S<'static> = S::Pair(&(C_LIST_INDUCTION, C_PAIR_126));
-const C_PAIR_335: S<'static> = S::Pair(&(C_PAIR_334, S::Empty));
-const C_PAIR_336: S<'static> = S::Pair(&(C_PAIR_142, C_PAIR_335));
-const C_PAIR_337: S<'static> = S::Pair(&(C_CONS, C_PAIR_336));
-const C_PAIR_338: S<'static> = S::Pair(&(C_PAIR_337, S::Empty));
-const C_PAIR_339: S<'static> = S::Pair(&(S::Empty, S::Empty));
-const C_PAIR_340: S<'static> = S::Pair(&(C_QUOTE, C_PAIR_339));
-const C_PAIR_341: S<'static> = S::Pair(&(C_PAIR_340, C_PAIR_338));
-const C_PAIR_342: S<'static> = S::Pair(&(C_PAIR_134, C_PAIR_341));
-const C_PAIR_343: S<'static> = S::Pair(&(C_IF, C_PAIR_342));
-const C_PAIR_344: S<'static> = S::Pair(&(C_PAIR_343, S::Empty));
-const C_PAIR_345: S<'static> = S::Pair(&(C_PAIR_14, C_PAIR_344));
-const C_PAIR_346: S<'static> = S::Pair(&(C_LIST_INDUCTION, C_PAIR_345));
-const C_PAIR_347: S<'static> = S::Pair(&(C_DEFUN, C_PAIR_346));
-const C_PAIR_348: S<'static> = S::Pair(&(C_PAIR_347, C_PAIR_333));
-const C_PAIR_349: S<'static> = S::Pair(&(C_PAIR_348, C_PAIR_330));
+const C_PAIR_0: S<'static> = cons!(C__LT, S::Empty);
+const C_PAIR_1: S<'static> = cons!(C__PLUS, C_PAIR_0);
+const C_PAIR_8: S<'static> = cons!(C_EQUAL, C_ATOM, C_CAR, C_CDR, C_CONS, C_NATP, C_SIZE, C_PAIR_1);
+const C_PAIR_9: S<'static> = cons!(C_SIZE, S::Empty);
+const C_PAIR_10: S<'static> = cons!(C_NATP, C_PAIR_9);
+const C_PAIR_11: S<'static> = cons!(C_CDR, C_PAIR_10);
+const C_PAIR_12: S<'static> = cons!(C_CAR, C_PAIR_11);
+const C_PAIR_13: S<'static> = cons!(C_ATOM, C_PAIR_12);
+const C_PAIR_14: S<'static> = cons!(C_X, S::Empty);
+const C_PAIR_15: S<'static> = cons!(C_CONS, C_PAIR_1);
+const C_PAIR_16: S<'static> = cons!(C_EQUAL, C_PAIR_15);
+const C_PAIR_17: S<'static> = cons!(C_Y, S::Empty);
+const C_PAIR_18: S<'static> = cons!(C_X, C_PAIR_17);
+const C_PAIR_19: S<'static> = cons!(C_E, S::Empty);
+const C_PAIR_20: S<'static> = cons!(C_A, C_PAIR_19);
+const C_PAIR_21: S<'static> = cons!(C_Q, C_PAIR_20);
+const C_PAIR_22: S<'static> = cons!(C_T, S::Empty);
+const C_PAIR_23: S<'static> = cons!(C_QUOTE, C_PAIR_22);
+const C_PAIR_24: S<'static> = cons!(C_PAIR_23, S::Empty);
+const C_PAIR_25: S<'static> = cons!(S::Num(0), S::Empty);
+const C_PAIR_26: S<'static> = cons!(C_QUOTE, C_PAIR_25);
+const C_PAIR_27: S<'static> = cons!(C_PAIR_26, C_PAIR_14);
+const C_PAIR_32: S<'static> = cons!(C_NATP, C_PAIR_14);
+const C_PAIR_42: S<'static> = cons!(C_Z, S::Empty);
+const C_PAIR_43: S<'static> = cons!(C_Y, C_PAIR_42);
+const C_PAIR_53: S<'static> = cons!(C_X, C_PAIR_43);
+const C_PAIR_58: S<'static> = cons!(C__PLUS, C_PAIR_18);
+const C_PAIR_59: S<'static> = cons!(C_PAIR_58, S::Empty);
+const C_PAIR_93: S<'static> = cons!(C_Y, C_PAIR_14);
+const C_PAIR_103: S<'static> = cons!(C_C, S::Empty);
+const C_PAIR_104: S<'static> = cons!(C_B, C_PAIR_103);
+const C_PAIR_123: S<'static> = cons!(C_SIZE, C_PAIR_14);
+const C_PAIR_124: S<'static> = cons!(C_PAIR_123, S::Empty);
+const C_PAIR_125: S<'static> = cons!(C_CDR, C_PAIR_14);
+const C_PAIR_126: S<'static> = cons!(C_PAIR_125, S::Empty);
+const C_PAIR_134: S<'static> = cons!(C_ATOM, C_PAIR_14);
+const C_PAIR_142: S<'static> = cons!(C_CAR, C_PAIR_14);
+const C_PAIR_143: S<'static> = cons!(C_PAIR_142, S::Empty);
+const C_PAIR_166: S<'static> = cons!(C_EQUAL, C_PAIR_18);
+const C_PAIR_188: S<'static> = cons!(C_IF, C_PAIR_53);
+const C_PAIR_210: S<'static> = cons!(C_NIL, S::Empty);
+const C_PAIR_211: S<'static> = cons!(C_QUOTE, C_PAIR_210);
+const C_PAIR_258: S<'static> = cons!(C_CONS, C_PAIR_18);
+const C_PAIR_259: S<'static> = cons!(C_PAIR_258, S::Empty);
+const C_PAIR_276: S<'static> = cons!(C_PAIR_211, S::Empty);
+const C_PAIR_284: S<'static> = cons!(
+    cons!(
+        C_DETHM,
+        C_ATOM_SLASH_CONS,
+        C_PAIR_18,
+        cons!(C_EQUAL, cons!(C_ATOM, C_PAIR_259), C_PAIR_276),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_CAR_SLASH_CONS,
+        C_PAIR_18,
+        cons!(C_EQUAL, cons!(C_CAR, C_PAIR_259), C_PAIR_14),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_CDR_SLASH_CONS,
+        C_PAIR_18,
+        cons!(C_EQUAL, cons!(C_CDR, C_PAIR_259), C_PAIR_17),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_EQUAL_SAME,
+        C_PAIR_14,
+        cons!(C_EQUAL, cons!(C_EQUAL, C_X, C_PAIR_14), C_PAIR_24),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_EQUAL_SWAP,
+        C_PAIR_18,
+        cons!(C_EQUAL, C_PAIR_166, cons!(C_EQUAL, C_PAIR_93), S::Empty),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_IF_SAME,
+        C_PAIR_18,
+        cons!(C_EQUAL, cons!(C_IF, C_X, C_Y, C_PAIR_17), C_PAIR_17),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_IF_TRUE,
+        C_PAIR_18,
+        cons!(C_EQUAL, cons!(C_IF, C_PAIR_23, C_PAIR_18), C_PAIR_14),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_IF_FALSE,
+        C_PAIR_18,
+        cons!(C_EQUAL, cons!(C_IF, C_PAIR_211, C_PAIR_18), C_PAIR_17),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_IF_NEST_E,
+        C_PAIR_53,
+        cons!(
+            C_IF,
+            C_X,
+            C_PAIR_23,
+            cons!(C_EQUAL, C_PAIR_188, C_PAIR_42),
+            S::Empty
+        ),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_IF_NEST_A,
+        C_PAIR_53,
+        cons!(C_IF, C_X, cons!(C_EQUAL, C_PAIR_188, C_PAIR_17), C_PAIR_24),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_CONS_SLASH_CAR_PLUS_CDR,
+        C_PAIR_14,
+        cons!(
+            C_IF,
+            C_PAIR_134,
+            C_PAIR_23,
+            cons!(C_EQUAL, cons!(C_CONS, C_PAIR_142, C_PAIR_126), C_PAIR_14),
+            S::Empty
+        ),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_EQUAL_IF,
+        C_PAIR_18,
+        cons!(C_IF, C_PAIR_166, C_PAIR_166, C_PAIR_24),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_NATP_SLASH_SIZE,
+        C_PAIR_14,
+        cons!(C_EQUAL, cons!(C_NATP, C_PAIR_124), C_PAIR_24),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_SIZE_SLASH_CAR,
+        C_PAIR_14,
+        cons!(
+            C_IF,
+            C_PAIR_134,
+            C_PAIR_23,
+            cons!(
+                C_EQUAL,
+                cons!(C__LT, cons!(C_SIZE, C_PAIR_143), C_PAIR_124),
+                C_PAIR_24
+            ),
+            S::Empty
+        ),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_SIZE_SLASH_CDR,
+        C_PAIR_14,
+        cons!(
+            C_IF,
+            C_PAIR_134,
+            C_PAIR_23,
+            cons!(
+                C_EQUAL,
+                cons!(C__LT, cons!(C_SIZE, C_PAIR_126), C_PAIR_124),
+                C_PAIR_24
+            ),
+            S::Empty
+        ),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_ASSOCIATE__PLUS,
+        cons!(C_A, C_PAIR_104),
+        cons!(
+            C_EQUAL,
+            cons!(C__PLUS, cons!(C__PLUS, C_A, C_B, S::Empty), C_PAIR_103),
+            cons!(C__PLUS, C_A, cons!(C__PLUS, C_PAIR_104), S::Empty),
+            S::Empty
+        ),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_COMMUTE__PLUS,
+        C_PAIR_18,
+        cons!(C_EQUAL, C_PAIR_58, cons!(C__PLUS, C_PAIR_93), S::Empty),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_NATP_SLASH__PLUS,
+        C_PAIR_18,
+        cons!(
+            C_IF,
+            C_PAIR_32,
+            cons!(
+                C_IF,
+                cons!(C_NATP, C_PAIR_17),
+                cons!(C_EQUAL, cons!(C_NATP, C_PAIR_59), C_PAIR_24),
+                C_PAIR_24
+            ),
+            C_PAIR_24
+        ),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_POSITIVES__PLUS,
+        C_PAIR_18,
+        cons!(
+            C_IF,
+            cons!(C__LT, C_PAIR_27),
+            cons!(
+                C_IF,
+                cons!(C__LT, C_PAIR_26, C_PAIR_17),
+                cons!(C_EQUAL, cons!(C__LT, C_PAIR_26, C_PAIR_59), C_PAIR_24),
+                C_PAIR_24
+            ),
+            C_PAIR_24
+        ),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_COMMON_ADDENDS__LT,
+        C_PAIR_53,
+        cons!(
+            C_EQUAL,
+            cons!(
+                C__LT,
+                cons!(C__PLUS, C_X, C_PAIR_42),
+                cons!(C__PLUS, C_PAIR_43),
+                S::Empty
+            ),
+            cons!(C__LT, C_PAIR_18),
+            S::Empty
+        ),
+        S::Empty
+    ),
+    cons!(
+        C_DETHM,
+        C_IDENTITY__PLUS,
+        C_PAIR_14,
+        cons!(
+            C_IF,
+            C_PAIR_32,
+            cons!(C_EQUAL, cons!(C__PLUS, C_PAIR_27), C_PAIR_14),
+            C_PAIR_24
+        ),
+        S::Empty
+    ),
+    S::Empty
+);
+const C_PAIR_285: S<'static> = cons!(C_PAIR_23, C_PAIR_276);
+const C_PAIR_286: S<'static> = cons!(C_IF_TRUE, C_PAIR_285);
+const C_PAIR_287: S<'static> = cons!(C_PAIR_286, S::Empty);
+const C_PAIR_288: S<'static> = cons!(S::Empty, C_PAIR_287);
+const C_PAIR_289: S<'static> = cons!(C_PAIR_288, S::Empty);
+const C_PAIR_290: S<'static> = cons!(C_NATP_SLASH_SIZE, C_PAIR_14);
+const C_PAIR_291: S<'static> = cons!(C_PAIR_290, S::Empty);
+const C_PAIR_292: S<'static> = cons!(C_Q, S::Empty);
+const C_PAIR_293: S<'static> = cons!(C_PAIR_292, C_PAIR_291);
+const C_PAIR_294: S<'static> = cons!(C_PAIR_293, C_PAIR_289);
+const C_PAIR_295: S<'static> = cons!(C_PAIR_134, C_PAIR_24);
+const C_PAIR_296: S<'static> = cons!(C_IF_SAME, C_PAIR_295);
+const C_PAIR_297: S<'static> = cons!(C_PAIR_296, S::Empty);
+const C_PAIR_298: S<'static> = cons!(C_A, S::Empty);
+const C_PAIR_299: S<'static> = cons!(C_PAIR_298, C_PAIR_297);
+const C_PAIR_300: S<'static> = cons!(C_PAIR_299, C_PAIR_294);
+const C_PAIR_309: S<'static> = cons!(C_SIZE_SLASH_CDR, C_PAIR_14);
+const C_PAIR_310: S<'static> = cons!(C_PAIR_309, S::Empty);
+const C_PAIR_349: S<'static> = cons!(
+    cons!(
+        cons!(
+            C_DEFUN,
+            C_LIST_INDUCTION,
+            C_PAIR_14,
+            cons!(
+                C_IF,
+                C_PAIR_134,
+                cons!(C_QUOTE, S::Empty, S::Empty),
+                cons!(
+                    C_CONS,
+                    C_PAIR_142,
+                    cons!(C_LIST_INDUCTION, C_PAIR_126),
+                    S::Empty
+                ),
+                S::Empty
+            ),
+            S::Empty
+        ),
+        C_PAIR_123,
+        cons!(C_PAIR_20, C_PAIR_310),
+        C_PAIR_300
+    ),
+    cons!(
+        cons!(
+            C_DEFUN,
+            C_STAR_INDUCTION,
+            C_PAIR_14,
+            cons!(
+                C_IF,
+                C_PAIR_134,
+                C_X,
+                cons!(
+                    C_CONS,
+                    cons!(C_STAR_INDUCTION, C_PAIR_143),
+                    cons!(C_STAR_INDUCTION, C_PAIR_126),
+                    S::Empty
+                ),
+                S::Empty
+            ),
+            S::Empty
+        ),
+        C_PAIR_123,
+        cons!(cons!(C_A, C_E, C_PAIR_298), C_PAIR_310),
+        cons!(
+            cons!(C_A, C_E, C_PAIR_292),
+            cons!(C_SIZE_SLASH_CAR, C_PAIR_14),
+            S::Empty
+        ),
+        cons!(C_PAIR_20, C_PAIR_287),
+        C_PAIR_300
+    ),
+    S::Empty
+);
 
 pub fn list0<'a>(context: &'a Context<'a>) -> S<'a> {
     S::Empty

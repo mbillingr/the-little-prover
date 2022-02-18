@@ -14,7 +14,9 @@ program = analyze(ast)
 evaluate(program)
 
 
-import jbob_rustcompiler as jbrc
+if __name__ == "__main__":
+    import jbob_rustcompiler as jbrc
 
-with open("jbob-rust/src/j_bob.rs", "w") as fd:
-    fd.write("\n".join(jbrc.analyze_program(ast)))
+    rust_program = jbrc.analyze_program(ast)
+    with open("jbob-rust/src/j_bob.rs", "w") as fd:
+        fd.write("\n".join(rust_program))

@@ -20,6 +20,7 @@ RUST_KEYWORDS = {
 
 constants = {"C_NIL": None, "C_T": None}  # predefined in the runtime
 pair_constants = []
+pair_constant_usage_counts = []
 
 
 def analyze_program(stmts):
@@ -33,8 +34,11 @@ def analyze_program(stmts):
         if value is not None
     ]
 
-    for i, (car, cdr) in enumerate(pair_constants):
-        consts.append(f"const C_PAIR_{i}: S<'static> = S::Pair(&({car}, {cdr}));")
+    listify_pair_constants()
+
+    for i, p in enumerate(pair_constants):
+        if pair_constant_usage_counts[i] > 0:
+            consts.append(f"const C_PAIR_{i}: S<'static> = {tuple_to_rustpair(p)};")
 
     return [
         "#![allow(non_snake_case)]",
@@ -46,6 +50,35 @@ def analyze_program(stmts):
         "",
         *statements,
     ]
+
+
+def listify_pair_constants():
+    for i, (car, cdr) in enumerate(pair_constants):
+        if car.startswith("C_PAIR_"):
+            idx = int(car[7:])
+            if pair_constant_usage_counts[idx] == 1:
+                pair_constant_usage_counts[idx] -= 1
+                car = pair_constants[idx]
+
+        if cdr.startswith("C_PAIR_"):
+            idx = int(cdr[7:])
+            if pair_constant_usage_counts[idx] == 1:
+                pair_constant_usage_counts[idx] -= 1
+                cdr = pair_constants[idx]
+
+        pair_constants[i] = (car, cdr)
+
+
+def tuple_to_rustpair(tpl):
+    if isinstance(tpl, str):
+        return tpl
+    car, cdr = tpl
+    elems = [tuple_to_rustpair(car)]
+    while isinstance(cdr, tuple):
+        car, cdr = cdr
+        elems.append(tuple_to_rustpair(car))
+    elems.append(cdr)
+    return f"cons!({', '.join(elems)})"
 
 
 def analyze_statement(stmt):
@@ -99,14 +132,16 @@ def analyze_quotation(value):
                 constants[rname] = f'S::Symbol("{name}")'
             return [rname]
         case Pair(a, b):
-            b_ = ' '.join(analyze_quotation(b))
-            a_ = ' '.join(analyze_quotation(a))
+            b_ = " ".join(analyze_quotation(b))
+            a_ = " ".join(analyze_quotation(a))
             p_ = (a_, b_)
             for i, c in enumerate(pair_constants):
                 if c == p_:
+                    pair_constant_usage_counts[i] += 1
                     return [f"C_PAIR_{i}"]
             i = len(pair_constants)
             pair_constants.append(p_)
+            pair_constant_usage_counts.append(1)
             return [f"C_PAIR_{i}"]
         case _:
             raise NotImplementedError(value)
@@ -128,7 +163,17 @@ def analyze_if(q, a, e):
     q_exec = analyze_expr(q)
     a_exec = analyze_expr(a)
     e_exec = analyze_expr(e)
-    return ["if", *q_exec, "!=", *analyze_quotation("nil"), "{", *a_exec, "} else {", *e_exec, "}"]
+    return [
+        "if",
+        *q_exec,
+        "!=",
+        *analyze_quotation("nil"),
+        "{",
+        *a_exec,
+        "} else {",
+        *e_exec,
+        "}",
+    ]
 
 
 def rustify(name: str) -> str:

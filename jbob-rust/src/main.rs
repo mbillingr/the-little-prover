@@ -1,5 +1,6 @@
-pub mod j_bob;
+#[macro_use]
 pub mod jbob_runtime;
+pub mod j_bob;
 
 use crate::jbob_runtime::S;
 use jbob_runtime::Context;

@@ -1,6 +1,16 @@
 use sexpr_parser::SexprFactory;
 use std::cell::RefCell;
 
+macro_rules! cons {
+    ($car:expr, $cdr:expr) => {
+        S::Pair(&($car, $cdr))
+    };
+
+    ($car:expr, $cadr:expr, $($rest:expr),+) => {
+        cons!($car, cons!($cadr, $($rest),+))
+    };
+}
+
 #[derive(Copy, Clone, PartialEq)]
 pub enum S<'a> {
     Empty,
