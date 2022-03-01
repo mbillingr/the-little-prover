@@ -40,14 +40,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "jbob-app"
-version = "0.1.0"
-
-[[package]]
-name = "jbob-rust"
+name = "jbob"
 version = "0.1.0"
 dependencies = [
  "sexpr_parser",
+]
+
+[[package]]
+name = "jbob-app"
+version = "0.1.0"
+dependencies = [
+ "jbob",
 ]
 
 [[package]]
@@ -55,6 +58,7 @@ name = "jbob-terminal"
 version = "0.1.0"
 dependencies = [
  "crossterm",
+ "jbob",
  "jbob-app",
 ]
 

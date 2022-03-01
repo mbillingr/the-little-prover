@@ -3,10 +3,13 @@ use crossterm::event::{read, Event, KeyCode};
 use crossterm::style::Stylize;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{cursor, execute, queue, style, style::ContentStyle, terminal};
-use jbob_app::items::{Framed, Item, EventHandler, SexprView};
+use jbob_app::items::{EventHandler, Framed, Item, SexprView};
 use jbob_app::{PrettyExpr, RenderTarget, Style, TextBuffer};
 use std::io::stdout;
 use std::io::{Result, Stdout, Write};
+
+use jbob::j_bob;
+use jbob::jbob_runtime::Context;
 
 fn main() -> Result<()> {
     let mut stdout = stdout();
@@ -79,9 +82,9 @@ fn adapt_style(s: jbob_app::Style) -> style::ContentStyle {
 }
 
 pub fn adapt_event(e: crossterm::event::Event) -> jbob_app::Event {
-    use jbob_app::Event as Y;
     use crossterm::event::Event as X;
     use crossterm::event::KeyCode::*;
+    use jbob_app::Event as Y;
     match e {
         X::Key(KeyEvent { code: Char(ch), .. }) => Y::Edit(ch),
         X::Key(KeyEvent {

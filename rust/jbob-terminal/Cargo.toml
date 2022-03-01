@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 crossterm = "0.23"
+jbob = { path = "../jbob" }
 jbob-app = { path = "../jbob-app" }
