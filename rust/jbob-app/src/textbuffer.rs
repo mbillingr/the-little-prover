@@ -22,9 +22,27 @@ impl TextBuffer {
         }
     }
 
+    pub fn width(&self) -> usize {
+        self.text.width()
+    }
+
+    pub fn height(&self) -> usize {
+        self.text.height()
+    }
+
     pub fn resize(&mut self, width: usize, height: usize) {
-        self.text = Vec2D::new(width, height);
-        self.style = Vec2D::new(width, height);
+        let text = std::mem::replace(&mut self.text, Vec2D::new(width, height));
+        let style = std::mem::replace(&mut self.style, Vec2D::new(width, height));
+        let old_buffer = TextBuffer { text, style };
+        self.copy_rect(
+            0,
+            0,
+            &old_buffer,
+            0,
+            0,
+            old_buffer.width().min(width),
+            old_buffer.height().min(height),
+        );
     }
 
     pub fn clear(&mut self, ch: char, style: Style) {
@@ -71,6 +89,29 @@ impl TextBuffer {
             self.set_char(x, y, ch, style.clone());
         }
     }
+
+    pub fn copy_rect(
+        &mut self,
+        x: usize,
+        y: usize,
+        src: &Self,
+        sx: usize,
+        sy: usize,
+        w: usize,
+        h: usize,
+    ) {
+        for j in 0..h {
+            for i in 0..w {
+                let ch = *src.text.get(sx + i, sy + j);
+                if ch != '\u{0}' {
+                    self.text.set(x + i, y + j, ch);
+
+                    let st = src.style.get(sx + i, sy + j);
+                    self.style.set(x + i, y + j, *st);
+                }
+            }
+        }
+    }
 }
 
 struct Vec2D<T> {
@@ -91,6 +132,10 @@ impl<T> Vec2D<T> {
 
     pub fn width(&self) -> usize {
         self.shape.0
+    }
+
+    pub fn height(&self) -> usize {
+        self.shape.1
     }
 
     pub fn get(&self, col: usize, row: usize) -> &T {

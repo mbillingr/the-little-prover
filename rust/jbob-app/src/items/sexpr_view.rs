@@ -147,8 +147,22 @@ impl Item for SexprView {
             .with_style(&self.cursor, Style::Highlight)
             .unwrap();
 
-        let mut cf = TextBufferFormatter::new(buf, x, y);
-        pe.write(&mut cf).unwrap()
+        let mut tmp = TextBuffer::new(0, 0);
+
+        let mut cf = TextBufferFormatter::new(&mut tmp);
+        pe.write(&mut cf).unwrap();
+
+        let mut first_row = 0;
+
+        if let Some((h0, h1)) = cf.highlight_row_range {
+            if h1 >= self.height {
+                first_row = h0 - self.height.saturating_sub(h1 - h0) / 2
+            }
+        }
+
+        let w = usize::min(self.width, tmp.width());
+        let h = usize::min(self.height, tmp.height() - first_row);
+        buf.copy_rect(x, y, &tmp, 0, first_row, w, h);
     }
 }
 
@@ -188,17 +202,19 @@ struct TextBufferFormatter<'a> {
     start_column: usize,
     current_row: usize,
     cursor: (usize, usize),
+    highlight_row_range: Option<(usize, usize)>,
 }
 
 impl<'a> TextBufferFormatter<'a> {
-    pub fn new(buf: &'a mut TextBuffer, x: usize, y: usize) -> Self {
+    pub fn new(buf: &'a mut TextBuffer) -> Self {
         TextBufferFormatter {
             buf,
             current_style: Default::default(),
             saved_styles: vec![],
-            start_column: x,
-            current_row: y,
-            cursor: (x, y),
+            start_column: 0,
+            current_row: 0,
+            cursor: (0, 0),
+            highlight_row_range: None,
         }
     }
 }
@@ -207,7 +223,19 @@ impl<'a> Formatter<Style> for TextBufferFormatter<'a> {
     type Error = ();
 
     fn write(&mut self, x: impl std::fmt::Display) -> std::result::Result<(), Self::Error> {
+        if self.cursor.1 >= self.buf.height() {
+            self.buf.resize(
+                self.buf.width(),
+                (self.buf.height() + 1).next_power_of_two(),
+            );
+        }
         for ch in x.to_string().chars() {
+            if self.cursor.0 >= self.buf.width() {
+                self.buf.resize(
+                    (self.buf.width() + 1).next_power_of_two(),
+                    self.buf.height(),
+                );
+            }
             self.buf
                 .set_char(self.cursor.0, self.cursor.1, ch, self.current_style);
             self.cursor.0 += 1;
@@ -217,6 +245,9 @@ impl<'a> Formatter<Style> for TextBufferFormatter<'a> {
 
     fn set_style(&mut self, style: &Style) {
         self.current_style = *style;
+        if *style == Style::Highlight && self.highlight_row_range.is_none() {
+            self.highlight_row_range = Some((self.current_row, self.current_row));
+        }
     }
 
     fn save_style(&mut self) {
@@ -224,6 +255,9 @@ impl<'a> Formatter<Style> for TextBufferFormatter<'a> {
     }
 
     fn restore_style(&mut self) {
+        if self.current_style == Style::Highlight {
+            self.highlight_row_range = self.highlight_row_range.map(|(s, _)| (s, self.current_row));
+        }
         let style = self.saved_styles.pop().unwrap();
         self.set_style(&style);
     }

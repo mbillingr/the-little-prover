@@ -1,12 +1,13 @@
-use crossterm::event::KeyEvent;
+use crossterm::event::{poll, KeyEvent};
 use crossterm::event::{read, Event, KeyCode};
 use crossterm::style::Stylize;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{cursor, execute, queue, style, style::ContentStyle, terminal};
 use jbob_app::items::{EventHandler, Framed, Item, SexprView};
-use jbob_app::{PrettyExpr, RenderTarget, Style, TextBuffer};
+use jbob_app::{RenderTarget, Style, TextBuffer};
 use std::io::stdout;
 use std::io::{Result, Stdout, Write};
+use std::time::Duration;
 
 use jbob::j_bob;
 use jbob::jbob_runtime::Context;
@@ -20,28 +21,32 @@ fn main() -> Result<()> {
     let (w, h) = terminal::size()?;
     let mut buffer: TextBuffer = TextBuffer::new(w as usize, h as usize);
 
-    let exp = PrettyExpr::empty_list();
+    let ctx = Context::new();
 
-    let mut sxv = SexprView::new(exp, 25, 10);
+    let exp = j_bob::axioms(&ctx).into();
 
-    loop {
+    let mut sxv = SexprView::new(exp, 40, 20);
+
+    'main_loop: loop {
         buffer.clear('╳', Style::Background);
 
         Framed::new(sxv.clone()).draw(&mut buffer, 2, 1);
 
         buffer.render(&mut Output(&mut stdout))?;
 
-        let event = read()?;
-        if !sxv.handle_event(&adapt_event(event)) {
-            match event {
-                Event::Resize(w, h) => {
-                    buffer.resize(w as usize, h as usize);
-                    sxv.resize(w as usize - 7, h as usize - 5)
+        while poll(Duration::from_micros(0))? {
+            let event = read()?;
+            if !sxv.handle_event(&adapt_event(event)) {
+                match event {
+                    Event::Resize(w, h) => {
+                        buffer.resize(w as usize, h as usize);
+                        sxv.resize(w as usize - 7, h as usize - 5)
+                    }
+                    Event::Key(KeyEvent {
+                        code: KeyCode::Esc, ..
+                    }) => break 'main_loop,
+                    _ => {}
                 }
-                Event::Key(KeyEvent {
-                    code: KeyCode::Esc, ..
-                }) => break,
-                _ => {}
             }
         }
     }
