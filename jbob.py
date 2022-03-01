@@ -17,6 +17,10 @@ evaluate(program)
 if __name__ == "__main__":
     import jbob_rustcompiler as jbrc
 
+    header = [
+        "// This source file is automatically generated. Changes may get lost!"
+    ]
     rust_program = jbrc.analyze_program(ast)
-    with open("jbob-rust/src/j_bob.rs", "w") as fd:
-        fd.write("\n".join(rust_program))
+    rust_source = header + rust_program
+    with open("rust/jbob/src/j_bob.rs", "w") as fd:
+        fd.write("\n".join(rust_source))

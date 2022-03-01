@@ -12,7 +12,7 @@ fn main() {}
 
 #[test]
 fn test_recess() {
-    let src = fs::read_to_string("../test_recess.scm").unwrap();
+    let src = fs::read_to_string("../../test_recess.scm").unwrap();
     test_runner(&src);
 }
 

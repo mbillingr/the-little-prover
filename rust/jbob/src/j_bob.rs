@@ -1,3 +1,4 @@
+// This source file is automatically generated. Changes may get lost!
 #![allow(non_snake_case)]
 #![allow(unused_variables)]
 
