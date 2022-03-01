@@ -2,4 +2,6 @@
 
 members = [
     "jbob",
+    "jbob-app",
+    "jbob-terminal",
 ]
