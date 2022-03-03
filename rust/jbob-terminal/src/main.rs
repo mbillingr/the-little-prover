@@ -34,7 +34,7 @@ fn main() -> Result<()> {
 
         buffer.render(&mut Output::new(&mut stdout))?;
 
-        while poll(Duration::from_micros(0))? {
+        loop {
             let event = read()?;
             if !sxv.handle_event(&adapt_event(event)) {
                 match event {
@@ -47,6 +47,10 @@ fn main() -> Result<()> {
                     }) => break 'main_loop,
                     _ => {}
                 }
+            }
+
+            if !poll(Duration::from_micros(0))? {
+                break;
             }
         }
     }
