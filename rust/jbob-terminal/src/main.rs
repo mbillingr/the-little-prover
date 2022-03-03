@@ -32,7 +32,7 @@ fn main() -> Result<()> {
 
         Framed::new(sxv.clone()).draw(&mut buffer, 2, 1);
 
-        buffer.render(&mut Output(&mut stdout))?;
+        buffer.render(&mut Output::new(&mut stdout))?;
 
         while poll(Duration::from_micros(0))? {
             let event = read()?;
@@ -57,30 +57,65 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-struct Output<'a>(&'a mut Stdout);
+struct Output<'a> {
+    stdout: &'a mut Stdout,
+    current_style: style::ContentStyle,
+}
+
+impl<'a> Output<'a> {
+    pub fn new(stdout: &'a mut Stdout) -> Self {
+        Output {
+            stdout,
+            current_style: Default::default(),
+        }
+    }
+}
 
 impl RenderTarget for Output<'_> {
     type Error = std::io::Error;
 
     fn prepare(&mut self) -> Result<()> {
-        queue!(self.0, cursor::MoveTo(0, 0))
+        queue!(self.stdout, cursor::MoveTo(0, 0))
     }
 
     fn finalize(&mut self) -> Result<()> {
-        self.0.flush()
+        self.stdout.flush()
     }
 
     fn write_char(&mut self, ch: char, s: jbob_app::Style) -> Result<()> {
         let s = adapt_style(s);
-        queue!(self.0, style::PrintStyledContent(s.apply(ch)))
+
+        if s != self.current_style {
+            queue!(self.stdout, style::SetAttribute(style::Attribute::Reset))?;
+
+            if s.background_color.is_some() {
+                queue!(
+                    self.stdout,
+                    style::SetBackgroundColor(s.background_color.unwrap())
+                )?;
+            }
+
+            if s.foreground_color.is_some() {
+                queue!(
+                    self.stdout,
+                    style::SetForegroundColor(s.foreground_color.unwrap())
+                )?;
+            }
+
+            queue!(self.stdout, style::SetAttributes(s.attributes))?;
+
+            self.current_style = s;
+        }
+
+        write!(self.stdout, "{}", ch)
     }
 }
 
 fn adapt_style(s: jbob_app::Style) -> style::ContentStyle {
     use jbob_app::Style::*;
     match s {
-        Default => ContentStyle::new().white().on_dark_grey(),
-        Background => ContentStyle::new().dark_green().on_dark_grey().bold(),
+        Default => ContentStyle::new().white().on_dark_grey().bold(),
+        Background => ContentStyle::new().dark_green().on_dark_grey(),
         Frame => ContentStyle::new().black().on_dark_grey(),
         Highlight => ContentStyle::new().black().on_dark_green(),
     }
