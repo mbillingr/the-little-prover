@@ -23,14 +23,15 @@ fn main() -> Result<()> {
 
     let ctx = Context::new();
 
-    let exp = j_bob::axioms(&ctx).into();
+    let exp = j_bob::prelude(&ctx).into();
 
-    let mut sxv = SexprView::new(exp, 40, 20);
+    let mut sxv = SexprView::new(exp);
 
     'main_loop: loop {
         buffer.clear('╳', Style::Background);
 
-        Framed::new(sxv.clone()).draw(&mut buffer, 2, 1);
+        let (w, h) = terminal::size()?;
+        Framed::new(sxv.clone()).draw(&mut buffer, 2, 1, w as usize - 4, h as usize - 2);
 
         buffer.render(&mut Output::new(&mut stdout))?;
 
@@ -40,7 +41,6 @@ fn main() -> Result<()> {
                 match event {
                     Event::Resize(w, h) => {
                         buffer.resize(w as usize, h as usize);
-                        sxv.resize(w as usize - 7, h as usize - 5)
                     }
                     Event::Key(KeyEvent {
                         code: KeyCode::Esc, ..
@@ -118,7 +118,7 @@ impl RenderTarget for Output<'_> {
 fn adapt_style(s: jbob_app::Style) -> style::ContentStyle {
     use jbob_app::Style::*;
     match s {
-        Default => ContentStyle::new().white().on_dark_grey().bold(),
+        Default => ContentStyle::new().white().on_dark_grey(),
         Background => ContentStyle::new().dark_green().on_dark_grey(),
         Frame => ContentStyle::new().black().on_dark_grey(),
         Highlight => ContentStyle::new().black().on_dark_green(),

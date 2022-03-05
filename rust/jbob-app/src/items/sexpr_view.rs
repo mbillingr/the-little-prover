@@ -7,17 +7,13 @@ use crate::textbuffer::TextBuffer;
 #[derive(Clone)]
 pub struct SexprView {
     expr: PrettyExpr<Style>,
-    width: usize,
-    height: usize,
     cursor: Vec<usize>,
 }
 
 impl SexprView {
-    pub fn new(expr: PrettyExpr<Style>, width: usize, height: usize) -> Self {
+    pub fn new(expr: PrettyExpr<Style>) -> Self {
         SexprView {
             expr,
-            width,
-            height,
             cursor: vec![],
         }
     }
@@ -127,18 +123,9 @@ impl SexprView {
 }
 
 impl Item for SexprView {
-    fn size(&self) -> (usize, usize) {
-        return (self.width, self.height);
-    }
-
-    fn resize(&mut self, width: usize, height: usize) {
-        self.width = width;
-        self.height = height;
-    }
-
-    fn draw(&self, buf: &mut TextBuffer, x: usize, y: usize) {
+    fn draw(&self, buf: &mut TextBuffer, x: usize, y: usize, width: usize, height: usize) {
         let mut pf = PrettyFormatter::default();
-        pf.max_code_width = self.width as usize;
+        pf.max_code_width = width;
         let mut pe = pf.pretty(self.expr.clone());
 
         pe = pe
@@ -155,13 +142,13 @@ impl Item for SexprView {
         let mut first_row = 0;
 
         if let Some((h0, h1)) = cf.highlight_row_range {
-            if h1 >= self.height {
-                first_row = h0 - self.height.saturating_sub(h1 - h0) / 2
+            if h1 >= height {
+                first_row = h0 - height.saturating_sub(h1 - h0) / 2
             }
         }
 
-        let w = usize::min(self.width, tmp.width());
-        let h = usize::min(self.height, tmp.height() - first_row);
+        let w = width.min(tmp.width());
+        let h = height.min(tmp.height() - first_row);
         buf.copy_rect(x, y, &tmp, 0, first_row, w, h);
     }
 }

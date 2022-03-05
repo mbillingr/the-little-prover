@@ -21,18 +21,7 @@ impl<T: Item> Framed<T> {
 }
 
 impl<T: Item> Item for Framed<T> {
-    fn size(&self) -> (usize, usize) {
-        let (w, h) = self.inner.size();
-        (w + 2, h + 2)
-    }
-
-    fn resize(&mut self, width: usize, height: usize) {
-        self.inner.resize(width - 2, height - 2)
-    }
-
-    fn draw(&self, buf: &mut TextBuffer, x: usize, y: usize) {
-        let (width, height) = self.size();
-
+    fn draw(&self, buf: &mut TextBuffer, x: usize, y: usize, width: usize, height: usize) {
         let left = x;
         let right = x + width - 1;
         let top = y;
@@ -64,6 +53,6 @@ impl<T: Item> Item for Framed<T> {
             self.tiles[4],
             self.style,
         );
-        self.inner.draw(buf, x + 1, y + 1)
+        self.inner.draw(buf, x + 1, y + 1, width - 2, height - 2)
     }
 }

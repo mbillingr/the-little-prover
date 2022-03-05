@@ -7,9 +7,7 @@ pub use framed::Framed;
 pub use sexpr_view::SexprView;
 
 pub trait Item {
-    fn size(&self) -> (usize, usize);
-    fn resize(&mut self, width: usize, height: usize);
-    fn draw(&self, buf: &mut TextBuffer, x: usize, y: usize);
+    fn draw(&self, buf: &mut TextBuffer, x: usize, y: usize, width: usize, height: usize);
 }
 
 pub trait EventHandler<E> {
