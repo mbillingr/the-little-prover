@@ -1,16 +1,16 @@
-use crate::items::Item;
+use crate::widgets::Widget;
 use crate::styles::Style;
 use crate::textbuffer::TextBuffer;
 
 const DEFAULT_FRAME: [char; 9] = ['╔', '═', '╗', '║', ' ', '║', '╚', '═', '╝'];
 
-pub struct Framed<T: Item> {
+pub struct Framed<T: Widget> {
     tiles: &'static [char],
     style: Style,
     inner: T,
 }
 
-impl<T: Item> Framed<T> {
+impl<T: Widget> Framed<T> {
     pub fn new(inner: T) -> Self {
         Framed {
             tiles: &DEFAULT_FRAME,
@@ -20,7 +20,7 @@ impl<T: Item> Framed<T> {
     }
 }
 
-impl<T: Item> Item for Framed<T> {
+impl<T: Widget> Widget for Framed<T> {
     fn draw(&self, buf: &mut TextBuffer, x: usize, y: usize, width: usize, height: usize) {
         let left = x;
         let right = x + width - 1;

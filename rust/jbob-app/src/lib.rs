@@ -1,5 +1,5 @@
 mod events;
-pub mod items;
+pub mod widgets;
 pub mod sexpr_adapter;
 mod styles;
 mod sxfmt;

@@ -3,7 +3,7 @@ use crossterm::event::{read, Event, KeyCode};
 use crossterm::style::Stylize;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{cursor, execute, queue, style, style::ContentStyle, terminal};
-use jbob_app::items::{EventHandler, Framed, Item, SexprView};
+use jbob_app::widgets::{EventHandler, Framed, Widget, SexprView};
 use jbob_app::{RenderTarget, Style, TextBuffer};
 use std::io::stdout;
 use std::io::{Result, Stdout, Write};

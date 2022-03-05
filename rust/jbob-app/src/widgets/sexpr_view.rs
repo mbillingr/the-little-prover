@@ -1,5 +1,5 @@
 use crate::events::Event;
-use crate::items::{EventHandler, Item};
+use crate::widgets::{EventHandler, Widget};
 use crate::styles::Style;
 use crate::sxfmt::{Formatter, PrettyExpr, PrettyFormatter};
 use crate::textbuffer::TextBuffer;
@@ -122,7 +122,7 @@ impl SexprView {
     }
 }
 
-impl Item for SexprView {
+impl Widget for SexprView {
     fn draw(&self, buf: &mut TextBuffer, x: usize, y: usize, width: usize, height: usize) {
         let mut pf = PrettyFormatter::default();
         pf.max_code_width = width;
