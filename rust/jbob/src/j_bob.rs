@@ -390,19 +390,19 @@ const C_PAIR_349: S<'static> = cons!(
     S::Empty
 );
 
-pub fn list0<'a>(context: &'a Context<'a>) -> S<'a> {
+pub fn list0<'a>(context: &Context<'a>) -> S<'a> {
     S::Empty
 }
 
-pub fn is_list0<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_list0<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     equal(context, x, S::Empty)
 }
 
-pub fn list1<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn list1<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     cons(context, x, list0(context))
 }
 
-pub fn is_list1<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_list1<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     if atom(context, x) != C_NIL {
         C_NIL
     } else {
@@ -410,15 +410,15 @@ pub fn is_list1<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn elem1<'a>(context: &'a Context<'a>, xs: S<'a>) -> S<'a> {
+pub fn elem1<'a>(context: &Context<'a>, xs: S<'a>) -> S<'a> {
     car(context, xs)
 }
 
-pub fn list2<'a>(context: &'a Context<'a>, x: S<'a>, y: S<'a>) -> S<'a> {
+pub fn list2<'a>(context: &Context<'a>, x: S<'a>, y: S<'a>) -> S<'a> {
     cons(context, x, list1(context, y))
 }
 
-pub fn is_list2<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_list2<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     if atom(context, x) != C_NIL {
         C_NIL
     } else {
@@ -426,15 +426,15 @@ pub fn is_list2<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn elem2<'a>(context: &'a Context<'a>, xs: S<'a>) -> S<'a> {
+pub fn elem2<'a>(context: &Context<'a>, xs: S<'a>) -> S<'a> {
     elem1(context, cdr(context, xs))
 }
 
-pub fn list3<'a>(context: &'a Context<'a>, x: S<'a>, y: S<'a>, z: S<'a>) -> S<'a> {
+pub fn list3<'a>(context: &Context<'a>, x: S<'a>, y: S<'a>, z: S<'a>) -> S<'a> {
     cons(context, x, list2(context, y, z))
 }
 
-pub fn is_list3<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_list3<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     if atom(context, x) != C_NIL {
         C_NIL
     } else {
@@ -442,15 +442,15 @@ pub fn is_list3<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn elem3<'a>(context: &'a Context<'a>, xs: S<'a>) -> S<'a> {
+pub fn elem3<'a>(context: &Context<'a>, xs: S<'a>) -> S<'a> {
     elem2(context, cdr(context, xs))
 }
 
-pub fn tag<'a>(context: &'a Context<'a>, sym: S<'a>, x: S<'a>) -> S<'a> {
+pub fn tag<'a>(context: &Context<'a>, sym: S<'a>, x: S<'a>) -> S<'a> {
     cons(context, sym, x)
 }
 
-pub fn is_tag<'a>(context: &'a Context<'a>, sym: S<'a>, x: S<'a>) -> S<'a> {
+pub fn is_tag<'a>(context: &Context<'a>, sym: S<'a>, x: S<'a>) -> S<'a> {
     if atom(context, x) != C_NIL {
         C_NIL
     } else {
@@ -458,11 +458,11 @@ pub fn is_tag<'a>(context: &'a Context<'a>, sym: S<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn untag<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn untag<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     cdr(context, x)
 }
 
-pub fn is_member<'a>(context: &'a Context<'a>, x: S<'a>, ys: S<'a>) -> S<'a> {
+pub fn is_member<'a>(context: &Context<'a>, x: S<'a>, ys: S<'a>) -> S<'a> {
     if atom(context, ys) != C_NIL {
         C_NIL
     } else {
@@ -474,11 +474,11 @@ pub fn is_member<'a>(context: &'a Context<'a>, x: S<'a>, ys: S<'a>) -> S<'a> {
     }
 }
 
-pub fn quote_c<'a>(context: &'a Context<'a>, value: S<'a>) -> S<'a> {
+pub fn quote_c<'a>(context: &Context<'a>, value: S<'a>) -> S<'a> {
     tag(context, C_QUOTE, list1(context, value))
 }
 
-pub fn is_quote<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_quote<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     if is_tag(context, C_QUOTE, x) != C_NIL {
         is_list1(context, untag(context, x))
     } else {
@@ -486,15 +486,15 @@ pub fn is_quote<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn quote_dot_value<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
+pub fn quote_dot_value<'a>(context: &Context<'a>, e: S<'a>) -> S<'a> {
     elem1(context, untag(context, e))
 }
 
-pub fn if_c<'a>(context: &'a Context<'a>, q: S<'a>, a: S<'a>, e: S<'a>) -> S<'a> {
+pub fn if_c<'a>(context: &Context<'a>, q: S<'a>, a: S<'a>, e: S<'a>) -> S<'a> {
     tag(context, C_IF, list3(context, q, a, e))
 }
 
-pub fn is_if<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_if<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     if is_tag(context, C_IF, x) != C_NIL {
         is_list3(context, untag(context, x))
     } else {
@@ -502,23 +502,23 @@ pub fn is_if<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn if_dot_q<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
+pub fn if_dot_q<'a>(context: &Context<'a>, e: S<'a>) -> S<'a> {
     elem1(context, untag(context, e))
 }
 
-pub fn if_dot_a<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
+pub fn if_dot_a<'a>(context: &Context<'a>, e: S<'a>) -> S<'a> {
     elem2(context, untag(context, e))
 }
 
-pub fn if_dot_e<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
+pub fn if_dot_e<'a>(context: &Context<'a>, e: S<'a>) -> S<'a> {
     elem3(context, untag(context, e))
 }
 
-pub fn app_c<'a>(context: &'a Context<'a>, name: S<'a>, args: S<'a>) -> S<'a> {
+pub fn app_c<'a>(context: &Context<'a>, name: S<'a>, args: S<'a>) -> S<'a> {
     cons(context, name, args)
 }
 
-pub fn is_app<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_app<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     if atom(context, x) != C_NIL {
         C_NIL
     } else {
@@ -534,15 +534,15 @@ pub fn is_app<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn app_dot_name<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
+pub fn app_dot_name<'a>(context: &Context<'a>, e: S<'a>) -> S<'a> {
     car(context, e)
 }
 
-pub fn app_dot_args<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
+pub fn app_dot_args<'a>(context: &Context<'a>, e: S<'a>) -> S<'a> {
     cdr(context, e)
 }
 
-pub fn is_var<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_var<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     if equal(context, x, C_T) != C_NIL {
         C_NIL
     } else {
@@ -558,11 +558,11 @@ pub fn is_var<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn defun_c<'a>(context: &'a Context<'a>, name: S<'a>, formals: S<'a>, body: S<'a>) -> S<'a> {
+pub fn defun_c<'a>(context: &Context<'a>, name: S<'a>, formals: S<'a>, body: S<'a>) -> S<'a> {
     tag(context, C_DEFUN, list3(context, name, formals, body))
 }
 
-pub fn is_defun<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_defun<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     if is_tag(context, C_DEFUN, x) != C_NIL {
         is_list3(context, untag(context, x))
     } else {
@@ -570,23 +570,23 @@ pub fn is_defun<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn defun_dot_name<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
+pub fn defun_dot_name<'a>(context: &Context<'a>, def: S<'a>) -> S<'a> {
     elem1(context, untag(context, def))
 }
 
-pub fn defun_dot_formals<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
+pub fn defun_dot_formals<'a>(context: &Context<'a>, def: S<'a>) -> S<'a> {
     elem2(context, untag(context, def))
 }
 
-pub fn defun_dot_body<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
+pub fn defun_dot_body<'a>(context: &Context<'a>, def: S<'a>) -> S<'a> {
     elem3(context, untag(context, def))
 }
 
-pub fn dethm_c<'a>(context: &'a Context<'a>, name: S<'a>, formals: S<'a>, body: S<'a>) -> S<'a> {
+pub fn dethm_c<'a>(context: &Context<'a>, name: S<'a>, formals: S<'a>, body: S<'a>) -> S<'a> {
     tag(context, C_DETHM, list3(context, name, formals, body))
 }
 
-pub fn is_dethm<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn is_dethm<'a>(context: &Context<'a>, x: S<'a>) -> S<'a> {
     if is_tag(context, C_DETHM, x) != C_NIL {
         is_list3(context, untag(context, x))
     } else {
@@ -594,19 +594,19 @@ pub fn is_dethm<'a>(context: &'a Context<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn dethm_dot_name<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
+pub fn dethm_dot_name<'a>(context: &Context<'a>, def: S<'a>) -> S<'a> {
     elem1(context, untag(context, def))
 }
 
-pub fn dethm_dot_formals<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
+pub fn dethm_dot_formals<'a>(context: &Context<'a>, def: S<'a>) -> S<'a> {
     elem2(context, untag(context, def))
 }
 
-pub fn dethm_dot_body<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
+pub fn dethm_dot_body<'a>(context: &Context<'a>, def: S<'a>) -> S<'a> {
     elem3(context, untag(context, def))
 }
 
-pub fn if_qae<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
+pub fn if_qae<'a>(context: &Context<'a>, e: S<'a>) -> S<'a> {
     list3(
         context,
         if_dot_q(context, e),
@@ -615,7 +615,7 @@ pub fn if_qae<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
     )
 }
 
-pub fn qae_if<'a>(context: &'a Context<'a>, es: S<'a>) -> S<'a> {
+pub fn qae_if<'a>(context: &Context<'a>, es: S<'a>) -> S<'a> {
     if_c(
         context,
         elem1(context, es),
@@ -624,11 +624,11 @@ pub fn qae_if<'a>(context: &'a Context<'a>, es: S<'a>) -> S<'a> {
     )
 }
 
-pub fn is_rator<'a>(context: &'a Context<'a>, name: S<'a>) -> S<'a> {
+pub fn is_rator<'a>(context: &Context<'a>, name: S<'a>) -> S<'a> {
     is_member(context, name, C_PAIR_8)
 }
 
-pub fn rator_dot_formals<'a>(context: &'a Context<'a>, rator: S<'a>) -> S<'a> {
+pub fn rator_dot_formals<'a>(context: &Context<'a>, rator: S<'a>) -> S<'a> {
     if is_member(context, rator, C_PAIR_13) != C_NIL {
         C_PAIR_14
     } else {
@@ -640,7 +640,7 @@ pub fn rator_dot_formals<'a>(context: &'a Context<'a>, rator: S<'a>) -> S<'a> {
     }
 }
 
-pub fn def_dot_name<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
+pub fn def_dot_name<'a>(context: &Context<'a>, def: S<'a>) -> S<'a> {
     if is_defun(context, def) != C_NIL {
         defun_dot_name(context, def)
     } else {
@@ -652,7 +652,7 @@ pub fn def_dot_name<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
     }
 }
 
-pub fn def_dot_formals<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
+pub fn def_dot_formals<'a>(context: &Context<'a>, def: S<'a>) -> S<'a> {
     if is_dethm(context, def) != C_NIL {
         dethm_dot_formals(context, def)
     } else {
@@ -664,7 +664,7 @@ pub fn def_dot_formals<'a>(context: &'a Context<'a>, def: S<'a>) -> S<'a> {
     }
 }
 
-pub fn if_c_when_necessary<'a>(context: &'a Context<'a>, q: S<'a>, a: S<'a>, e: S<'a>) -> S<'a> {
+pub fn if_c_when_necessary<'a>(context: &Context<'a>, q: S<'a>, a: S<'a>, e: S<'a>) -> S<'a> {
     if equal(context, a, e) != C_NIL {
         a
     } else {
@@ -672,7 +672,7 @@ pub fn if_c_when_necessary<'a>(context: &'a Context<'a>, q: S<'a>, a: S<'a>, e: 
     }
 }
 
-pub fn conjunction<'a>(context: &'a Context<'a>, es: S<'a>) -> S<'a> {
+pub fn conjunction<'a>(context: &Context<'a>, es: S<'a>) -> S<'a> {
     if atom(context, es) != C_NIL {
         quote_c(context, C_T)
     } else {
@@ -689,7 +689,7 @@ pub fn conjunction<'a>(context: &'a Context<'a>, es: S<'a>) -> S<'a> {
     }
 }
 
-pub fn implication<'a>(context: &'a Context<'a>, es: S<'a>, e: S<'a>) -> S<'a> {
+pub fn implication<'a>(context: &Context<'a>, es: S<'a>, e: S<'a>) -> S<'a> {
     if atom(context, es) != C_NIL {
         e
     } else {
@@ -702,7 +702,7 @@ pub fn implication<'a>(context: &'a Context<'a>, es: S<'a>, e: S<'a>) -> S<'a> {
     }
 }
 
-pub fn is_args_arity<'a>(context: &'a Context<'a>, def: S<'a>, args: S<'a>) -> S<'a> {
+pub fn is_args_arity<'a>(context: &Context<'a>, def: S<'a>, args: S<'a>) -> S<'a> {
     if is_dethm(context, def) != C_NIL {
         C_NIL
     } else {
@@ -718,7 +718,7 @@ pub fn is_args_arity<'a>(context: &'a Context<'a>, def: S<'a>, args: S<'a>) -> S
     }
 }
 
-pub fn is_app_arity<'a>(context: &'a Context<'a>, defs: S<'a>, app: S<'a>) -> S<'a> {
+pub fn is_app_arity<'a>(context: &Context<'a>, defs: S<'a>, app: S<'a>) -> S<'a> {
     is_args_arity(
         context,
         lookup(context, app_dot_name(context, app), defs),
@@ -726,7 +726,7 @@ pub fn is_app_arity<'a>(context: &'a Context<'a>, defs: S<'a>, app: S<'a>) -> S<
     )
 }
 
-pub fn lookup<'a>(context: &'a Context<'a>, name: S<'a>, defs: S<'a>) -> S<'a> {
+pub fn lookup<'a>(context: &Context<'a>, name: S<'a>, defs: S<'a>) -> S<'a> {
     if atom(context, defs) != C_NIL {
         name
     } else {
@@ -738,7 +738,7 @@ pub fn lookup<'a>(context: &'a Context<'a>, name: S<'a>, defs: S<'a>) -> S<'a> {
     }
 }
 
-pub fn is_undefined<'a>(context: &'a Context<'a>, name: S<'a>, defs: S<'a>) -> S<'a> {
+pub fn is_undefined<'a>(context: &Context<'a>, name: S<'a>, defs: S<'a>) -> S<'a> {
     if is_var(context, name) != C_NIL {
         equal(context, lookup(context, name, defs), name)
     } else {
@@ -746,7 +746,7 @@ pub fn is_undefined<'a>(context: &'a Context<'a>, name: S<'a>, defs: S<'a>) -> S
     }
 }
 
-pub fn is_bound<'a>(context: &'a Context<'a>, var: S<'a>, vars: S<'a>) -> S<'a> {
+pub fn is_bound<'a>(context: &Context<'a>, var: S<'a>, vars: S<'a>) -> S<'a> {
     if equal(context, vars, C_ANY) != C_NIL {
         C_T
     } else {
@@ -754,7 +754,7 @@ pub fn is_bound<'a>(context: &'a Context<'a>, var: S<'a>, vars: S<'a>) -> S<'a> 
     }
 }
 
-pub fn is_exprs<'a>(context: &'a Context<'a>, defs: S<'a>, vars: S<'a>, es: S<'a>) -> S<'a> {
+pub fn is_exprs<'a>(context: &Context<'a>, defs: S<'a>, vars: S<'a>, es: S<'a>) -> S<'a> {
     if atom(context, es) != C_NIL {
         C_T
     } else {
@@ -800,11 +800,11 @@ pub fn is_exprs<'a>(context: &'a Context<'a>, defs: S<'a>, vars: S<'a>, es: S<'a
     }
 }
 
-pub fn is_expr<'a>(context: &'a Context<'a>, defs: S<'a>, vars: S<'a>, e: S<'a>) -> S<'a> {
+pub fn is_expr<'a>(context: &Context<'a>, defs: S<'a>, vars: S<'a>, e: S<'a>) -> S<'a> {
     is_exprs(context, defs, vars, list1(context, e))
 }
 
-pub fn is_subset<'a>(context: &'a Context<'a>, xs: S<'a>, ys: S<'a>) -> S<'a> {
+pub fn is_subset<'a>(context: &Context<'a>, xs: S<'a>, ys: S<'a>) -> S<'a> {
     if atom(context, xs) != C_NIL {
         C_T
     } else {
@@ -816,7 +816,7 @@ pub fn is_subset<'a>(context: &'a Context<'a>, xs: S<'a>, ys: S<'a>) -> S<'a> {
     }
 }
 
-pub fn list_extend<'a>(context: &'a Context<'a>, xs: S<'a>, x: S<'a>) -> S<'a> {
+pub fn list_extend<'a>(context: &Context<'a>, xs: S<'a>, x: S<'a>) -> S<'a> {
     if atom(context, xs) != C_NIL {
         list1(context, x)
     } else {
@@ -832,7 +832,7 @@ pub fn list_extend<'a>(context: &'a Context<'a>, xs: S<'a>, x: S<'a>) -> S<'a> {
     }
 }
 
-pub fn list_union<'a>(context: &'a Context<'a>, xs: S<'a>, ys: S<'a>) -> S<'a> {
+pub fn list_union<'a>(context: &Context<'a>, xs: S<'a>, ys: S<'a>) -> S<'a> {
     if atom(context, ys) != C_NIL {
         xs
     } else {
@@ -844,7 +844,7 @@ pub fn list_union<'a>(context: &'a Context<'a>, xs: S<'a>, ys: S<'a>) -> S<'a> {
     }
 }
 
-pub fn get_arg_from<'a>(context: &'a Context<'a>, n: S<'a>, args: S<'a>, from: S<'a>) -> S<'a> {
+pub fn get_arg_from<'a>(context: &Context<'a>, n: S<'a>, args: S<'a>, from: S<'a>) -> S<'a> {
     if atom(context, args) != C_NIL {
         C_NIL
     } else {
@@ -861,12 +861,12 @@ pub fn get_arg_from<'a>(context: &'a Context<'a>, n: S<'a>, args: S<'a>, from: S
     }
 }
 
-pub fn get_arg<'a>(context: &'a Context<'a>, n: S<'a>, args: S<'a>) -> S<'a> {
+pub fn get_arg<'a>(context: &Context<'a>, n: S<'a>, args: S<'a>) -> S<'a> {
     get_arg_from(context, n, args, S::Num(1))
 }
 
 pub fn set_arg_from<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     n: S<'a>,
     args: S<'a>,
     y: S<'a>,
@@ -893,11 +893,11 @@ pub fn set_arg_from<'a>(
     }
 }
 
-pub fn set_arg<'a>(context: &'a Context<'a>, n: S<'a>, args: S<'a>, y: S<'a>) -> S<'a> {
+pub fn set_arg<'a>(context: &Context<'a>, n: S<'a>, args: S<'a>, y: S<'a>) -> S<'a> {
     set_arg_from(context, n, args, y, S::Num(1))
 }
 
-pub fn _lt__eq_len_from<'a>(context: &'a Context<'a>, n: S<'a>, args: S<'a>, from: S<'a>) -> S<'a> {
+pub fn _lt__eq_len_from<'a>(context: &Context<'a>, n: S<'a>, args: S<'a>, from: S<'a>) -> S<'a> {
     if atom(context, args) != C_NIL {
         C_NIL
     } else {
@@ -914,7 +914,7 @@ pub fn _lt__eq_len_from<'a>(context: &'a Context<'a>, n: S<'a>, args: S<'a>, fro
     }
 }
 
-pub fn _lt__eq_len<'a>(context: &'a Context<'a>, n: S<'a>, args: S<'a>) -> S<'a> {
+pub fn _lt__eq_len<'a>(context: &Context<'a>, n: S<'a>, args: S<'a>) -> S<'a> {
     if _lt(context, S::Num(0), n) != C_NIL {
         _lt__eq_len_from(context, n, args, S::Num(1))
     } else {
@@ -922,7 +922,7 @@ pub fn _lt__eq_len<'a>(context: &'a Context<'a>, n: S<'a>, args: S<'a>) -> S<'a>
     }
 }
 
-pub fn is_arity<'a>(context: &'a Context<'a>, vars: S<'a>, es: S<'a>) -> S<'a> {
+pub fn is_arity<'a>(context: &Context<'a>, vars: S<'a>, es: S<'a>) -> S<'a> {
     if atom(context, vars) != C_NIL {
         atom(context, es)
     } else {
@@ -934,7 +934,7 @@ pub fn is_arity<'a>(context: &'a Context<'a>, vars: S<'a>, es: S<'a>) -> S<'a> {
     }
 }
 
-pub fn is_formals<'a>(context: &'a Context<'a>, vars: S<'a>) -> S<'a> {
+pub fn is_formals<'a>(context: &Context<'a>, vars: S<'a>) -> S<'a> {
     if atom(context, vars) != C_NIL {
         C_T
     } else {
@@ -950,7 +950,7 @@ pub fn is_formals<'a>(context: &'a Context<'a>, vars: S<'a>) -> S<'a> {
     }
 }
 
-pub fn is_direction<'a>(context: &'a Context<'a>, dir: S<'a>) -> S<'a> {
+pub fn is_direction<'a>(context: &Context<'a>, dir: S<'a>) -> S<'a> {
     if natp(context, dir) != C_NIL {
         C_T
     } else {
@@ -958,7 +958,7 @@ pub fn is_direction<'a>(context: &'a Context<'a>, dir: S<'a>) -> S<'a> {
     }
 }
 
-pub fn is_path<'a>(context: &'a Context<'a>, path: S<'a>) -> S<'a> {
+pub fn is_path<'a>(context: &Context<'a>, path: S<'a>) -> S<'a> {
     if atom(context, path) != C_NIL {
         C_T
     } else {
@@ -970,7 +970,7 @@ pub fn is_path<'a>(context: &'a Context<'a>, path: S<'a>) -> S<'a> {
     }
 }
 
-pub fn is_quoted_exprs<'a>(context: &'a Context<'a>, args: S<'a>) -> S<'a> {
+pub fn is_quoted_exprs<'a>(context: &Context<'a>, args: S<'a>) -> S<'a> {
     if atom(context, args) != C_NIL {
         C_T
     } else {
@@ -982,7 +982,7 @@ pub fn is_quoted_exprs<'a>(context: &'a Context<'a>, args: S<'a>) -> S<'a> {
     }
 }
 
-pub fn is_step_args<'a>(context: &'a Context<'a>, defs: S<'a>, def: S<'a>, args: S<'a>) -> S<'a> {
+pub fn is_step_args<'a>(context: &Context<'a>, defs: S<'a>, def: S<'a>, args: S<'a>) -> S<'a> {
     if is_dethm(context, def) != C_NIL {
         if is_arity(context, dethm_dot_formals(context, def), args) != C_NIL {
             is_exprs(context, defs, C_ANY, args)
@@ -1010,7 +1010,7 @@ pub fn is_step_args<'a>(context: &'a Context<'a>, defs: S<'a>, def: S<'a>, args:
     }
 }
 
-pub fn is_step_app<'a>(context: &'a Context<'a>, defs: S<'a>, app: S<'a>) -> S<'a> {
+pub fn is_step_app<'a>(context: &Context<'a>, defs: S<'a>, app: S<'a>) -> S<'a> {
     is_step_args(
         context,
         defs,
@@ -1019,7 +1019,7 @@ pub fn is_step_app<'a>(context: &'a Context<'a>, defs: S<'a>, app: S<'a>) -> S<'
     )
 }
 
-pub fn is_step<'a>(context: &'a Context<'a>, defs: S<'a>, step: S<'a>) -> S<'a> {
+pub fn is_step<'a>(context: &Context<'a>, defs: S<'a>, step: S<'a>) -> S<'a> {
     if is_path(context, elem1(context, step)) != C_NIL {
         if is_app(context, elem2(context, step)) != C_NIL {
             is_step_app(context, defs, elem2(context, step))
@@ -1031,7 +1031,7 @@ pub fn is_step<'a>(context: &'a Context<'a>, defs: S<'a>, step: S<'a>) -> S<'a> 
     }
 }
 
-pub fn is_steps<'a>(context: &'a Context<'a>, defs: S<'a>, steps: S<'a>) -> S<'a> {
+pub fn is_steps<'a>(context: &Context<'a>, defs: S<'a>, steps: S<'a>) -> S<'a> {
     if atom(context, steps) != C_NIL {
         C_T
     } else {
@@ -1044,7 +1044,7 @@ pub fn is_steps<'a>(context: &'a Context<'a>, defs: S<'a>, steps: S<'a>) -> S<'a
 }
 
 pub fn is_induction_scheme_for<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     def: S<'a>,
     vars: S<'a>,
     e: S<'a>,
@@ -1069,12 +1069,7 @@ pub fn is_induction_scheme_for<'a>(
     }
 }
 
-pub fn is_induction_scheme<'a>(
-    context: &'a Context<'a>,
-    defs: S<'a>,
-    vars: S<'a>,
-    e: S<'a>,
-) -> S<'a> {
+pub fn is_induction_scheme<'a>(context: &Context<'a>, defs: S<'a>, vars: S<'a>, e: S<'a>) -> S<'a> {
     if is_app(context, e) != C_NIL {
         is_induction_scheme_for(
             context,
@@ -1087,7 +1082,7 @@ pub fn is_induction_scheme<'a>(
     }
 }
 
-pub fn is_seed<'a>(context: &'a Context<'a>, defs: S<'a>, def: S<'a>, seed: S<'a>) -> S<'a> {
+pub fn is_seed<'a>(context: &Context<'a>, defs: S<'a>, def: S<'a>, seed: S<'a>) -> S<'a> {
     if equal(context, seed, C_NIL) != C_NIL {
         C_T
     } else {
@@ -1103,7 +1098,7 @@ pub fn is_seed<'a>(context: &'a Context<'a>, defs: S<'a>, def: S<'a>, seed: S<'a
     }
 }
 
-pub fn extend_rec<'a>(context: &'a Context<'a>, defs: S<'a>, def: S<'a>) -> S<'a> {
+pub fn extend_rec<'a>(context: &Context<'a>, defs: S<'a>, def: S<'a>) -> S<'a> {
     if is_defun(context, def) != C_NIL {
         list_extend(
             context,
@@ -1125,7 +1120,7 @@ pub fn extend_rec<'a>(context: &'a Context<'a>, defs: S<'a>, def: S<'a>) -> S<'a
 }
 
 pub fn is_def_contents<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     known_defs: S<'a>,
     formals: S<'a>,
     body: S<'a>,
@@ -1137,7 +1132,7 @@ pub fn is_def_contents<'a>(
     }
 }
 
-pub fn is_def<'a>(context: &'a Context<'a>, known_defs: S<'a>, def: S<'a>) -> S<'a> {
+pub fn is_def<'a>(context: &Context<'a>, known_defs: S<'a>, def: S<'a>) -> S<'a> {
     if is_dethm(context, def) != C_NIL {
         if is_undefined(context, dethm_dot_name(context, def), known_defs) != C_NIL {
             is_def_contents(
@@ -1167,7 +1162,7 @@ pub fn is_def<'a>(context: &'a Context<'a>, known_defs: S<'a>, def: S<'a>) -> S<
     }
 }
 
-pub fn is_defs<'a>(context: &'a Context<'a>, known_defs: S<'a>, defs: S<'a>) -> S<'a> {
+pub fn is_defs<'a>(context: &Context<'a>, known_defs: S<'a>, defs: S<'a>) -> S<'a> {
     if atom(context, defs) != C_NIL {
         C_T
     } else {
@@ -1183,7 +1178,7 @@ pub fn is_defs<'a>(context: &'a Context<'a>, known_defs: S<'a>, defs: S<'a>) -> 
     }
 }
 
-pub fn is_list2_or_more<'a>(context: &'a Context<'a>, pf: S<'a>) -> S<'a> {
+pub fn is_list2_or_more<'a>(context: &Context<'a>, pf: S<'a>) -> S<'a> {
     if atom(context, pf) != C_NIL {
         C_NIL
     } else {
@@ -1195,7 +1190,7 @@ pub fn is_list2_or_more<'a>(context: &'a Context<'a>, pf: S<'a>) -> S<'a> {
     }
 }
 
-pub fn is_proof<'a>(context: &'a Context<'a>, defs: S<'a>, pf: S<'a>) -> S<'a> {
+pub fn is_proof<'a>(context: &Context<'a>, defs: S<'a>, pf: S<'a>) -> S<'a> {
     if is_list2_or_more(context, pf) != C_NIL {
         if is_def(context, defs, elem1(context, pf)) != C_NIL {
             if is_seed(context, defs, elem1(context, pf), elem2(context, pf)) != C_NIL {
@@ -1215,7 +1210,7 @@ pub fn is_proof<'a>(context: &'a Context<'a>, defs: S<'a>, pf: S<'a>) -> S<'a> {
     }
 }
 
-pub fn is_proofs<'a>(context: &'a Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
+pub fn is_proofs<'a>(context: &Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
     if atom(context, pfs) != C_NIL {
         C_T
     } else {
@@ -1231,7 +1226,7 @@ pub fn is_proofs<'a>(context: &'a Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a>
     }
 }
 
-pub fn sub_var<'a>(context: &'a Context<'a>, vars: S<'a>, args: S<'a>, var: S<'a>) -> S<'a> {
+pub fn sub_var<'a>(context: &Context<'a>, vars: S<'a>, args: S<'a>, var: S<'a>) -> S<'a> {
     if atom(context, vars) != C_NIL {
         var
     } else {
@@ -1243,7 +1238,7 @@ pub fn sub_var<'a>(context: &'a Context<'a>, vars: S<'a>, args: S<'a>, var: S<'a
     }
 }
 
-pub fn sub_es<'a>(context: &'a Context<'a>, vars: S<'a>, args: S<'a>, es: S<'a>) -> S<'a> {
+pub fn sub_es<'a>(context: &Context<'a>, vars: S<'a>, args: S<'a>, es: S<'a>) -> S<'a> {
     if atom(context, es) != C_NIL {
         S::Empty
     } else {
@@ -1286,11 +1281,11 @@ pub fn sub_es<'a>(context: &'a Context<'a>, vars: S<'a>, args: S<'a>, es: S<'a>)
     }
 }
 
-pub fn sub_e<'a>(context: &'a Context<'a>, vars: S<'a>, args: S<'a>, e: S<'a>) -> S<'a> {
+pub fn sub_e<'a>(context: &Context<'a>, vars: S<'a>, args: S<'a>, e: S<'a>) -> S<'a> {
     elem1(context, sub_es(context, vars, args, list1(context, e)))
 }
 
-pub fn exprs_recs<'a>(context: &'a Context<'a>, f: S<'a>, es: S<'a>) -> S<'a> {
+pub fn exprs_recs<'a>(context: &Context<'a>, f: S<'a>, es: S<'a>) -> S<'a> {
     if atom(context, es) != C_NIL {
         S::Empty
     } else {
@@ -1330,12 +1325,12 @@ pub fn exprs_recs<'a>(context: &'a Context<'a>, f: S<'a>, es: S<'a>) -> S<'a> {
     }
 }
 
-pub fn expr_recs<'a>(context: &'a Context<'a>, f: S<'a>, e: S<'a>) -> S<'a> {
+pub fn expr_recs<'a>(context: &Context<'a>, f: S<'a>, e: S<'a>) -> S<'a> {
     exprs_recs(context, f, list1(context, e))
 }
 
 pub fn totality_slash__lt<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     meas: S<'a>,
     formals: S<'a>,
     app: S<'a>,
@@ -1352,7 +1347,7 @@ pub fn totality_slash__lt<'a>(
 }
 
 pub fn totality_slash_meas<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     meas: S<'a>,
     formals: S<'a>,
     apps: S<'a>,
@@ -1369,7 +1364,7 @@ pub fn totality_slash_meas<'a>(
 }
 
 pub fn totality_slash_if<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     meas: S<'a>,
     f: S<'a>,
     formals: S<'a>,
@@ -1402,7 +1397,7 @@ pub fn totality_slash_if<'a>(
     }
 }
 
-pub fn totality_slash_claim<'a>(context: &'a Context<'a>, meas: S<'a>, def: S<'a>) -> S<'a> {
+pub fn totality_slash_claim<'a>(context: &Context<'a>, meas: S<'a>, def: S<'a>) -> S<'a> {
     if equal(context, meas, C_NIL) != C_NIL {
         if equal(
             context,
@@ -1435,7 +1430,7 @@ pub fn totality_slash_claim<'a>(context: &'a Context<'a>, meas: S<'a>, def: S<'a
 }
 
 pub fn induction_slash_prems<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     vars: S<'a>,
     claim: S<'a>,
     apps: S<'a>,
@@ -1457,7 +1452,7 @@ pub fn induction_slash_prems<'a>(
 }
 
 pub fn induction_slash_if<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     vars: S<'a>,
     claim: S<'a>,
     f: S<'a>,
@@ -1489,7 +1484,7 @@ pub fn induction_slash_if<'a>(
 }
 
 pub fn induction_slash_defun<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     vars: S<'a>,
     claim: S<'a>,
     def: S<'a>,
@@ -1509,7 +1504,7 @@ pub fn induction_slash_defun<'a>(
 }
 
 pub fn induction_slash_claim<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     defs: S<'a>,
     seed: S<'a>,
     def: S<'a>,
@@ -1526,7 +1521,7 @@ pub fn induction_slash_claim<'a>(
     }
 }
 
-pub fn find_focus_at_direction<'a>(context: &'a Context<'a>, dir: S<'a>, e: S<'a>) -> S<'a> {
+pub fn find_focus_at_direction<'a>(context: &Context<'a>, dir: S<'a>, e: S<'a>) -> S<'a> {
     if equal(context, dir, C_Q) != C_NIL {
         if_dot_q(context, e)
     } else {
@@ -1543,7 +1538,7 @@ pub fn find_focus_at_direction<'a>(context: &'a Context<'a>, dir: S<'a>, e: S<'a
 }
 
 pub fn rewrite_focus_at_direction<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     dir: S<'a>,
     e1: S<'a>,
     e2: S<'a>,
@@ -1567,7 +1562,7 @@ pub fn rewrite_focus_at_direction<'a>(
     }
 }
 
-pub fn is_focus_is_at_direction<'a>(context: &'a Context<'a>, dir: S<'a>, e: S<'a>) -> S<'a> {
+pub fn is_focus_is_at_direction<'a>(context: &Context<'a>, dir: S<'a>, e: S<'a>) -> S<'a> {
     if equal(context, dir, C_Q) != C_NIL {
         is_if(context, e)
     } else {
@@ -1587,7 +1582,7 @@ pub fn is_focus_is_at_direction<'a>(context: &'a Context<'a>, dir: S<'a>, e: S<'
     }
 }
 
-pub fn is_focus_is_at_path<'a>(context: &'a Context<'a>, path: S<'a>, e: S<'a>) -> S<'a> {
+pub fn is_focus_is_at_path<'a>(context: &Context<'a>, path: S<'a>, e: S<'a>) -> S<'a> {
     if atom(context, path) != C_NIL {
         C_T
     } else {
@@ -1603,7 +1598,7 @@ pub fn is_focus_is_at_path<'a>(context: &'a Context<'a>, path: S<'a>, e: S<'a>) 
     }
 }
 
-pub fn find_focus_at_path<'a>(context: &'a Context<'a>, path: S<'a>, e: S<'a>) -> S<'a> {
+pub fn find_focus_at_path<'a>(context: &Context<'a>, path: S<'a>, e: S<'a>) -> S<'a> {
     if atom(context, path) != C_NIL {
         e
     } else {
@@ -1616,7 +1611,7 @@ pub fn find_focus_at_path<'a>(context: &'a Context<'a>, path: S<'a>, e: S<'a>) -
 }
 
 pub fn rewrite_focus_at_path<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     path: S<'a>,
     e1: S<'a>,
     e2: S<'a>,
@@ -1638,7 +1633,7 @@ pub fn rewrite_focus_at_path<'a>(
     }
 }
 
-pub fn is_prem_a<'a>(context: &'a Context<'a>, prem: S<'a>, path: S<'a>, e: S<'a>) -> S<'a> {
+pub fn is_prem_a<'a>(context: &Context<'a>, prem: S<'a>, path: S<'a>, e: S<'a>) -> S<'a> {
     if atom(context, path) != C_NIL {
         C_NIL
     } else {
@@ -1664,7 +1659,7 @@ pub fn is_prem_a<'a>(context: &'a Context<'a>, prem: S<'a>, path: S<'a>, e: S<'a
     }
 }
 
-pub fn is_prem_e<'a>(context: &'a Context<'a>, prem: S<'a>, path: S<'a>, e: S<'a>) -> S<'a> {
+pub fn is_prem_e<'a>(context: &Context<'a>, prem: S<'a>, path: S<'a>, e: S<'a>) -> S<'a> {
     if atom(context, path) != C_NIL {
         C_NIL
     } else {
@@ -1690,7 +1685,7 @@ pub fn is_prem_e<'a>(context: &'a Context<'a>, prem: S<'a>, path: S<'a>, e: S<'a
     }
 }
 
-pub fn follow_prems<'a>(context: &'a Context<'a>, path: S<'a>, e: S<'a>, thm: S<'a>) -> S<'a> {
+pub fn follow_prems<'a>(context: &Context<'a>, path: S<'a>, e: S<'a>, thm: S<'a>) -> S<'a> {
     if is_if(context, thm) != C_NIL {
         if is_prem_a(context, if_dot_q(context, thm), path, e) != C_NIL {
             follow_prems(context, path, e, if_dot_a(context, thm))
@@ -1706,7 +1701,7 @@ pub fn follow_prems<'a>(context: &'a Context<'a>, path: S<'a>, e: S<'a>, thm: S<
     }
 }
 
-pub fn unary_op<'a>(context: &'a Context<'a>, rator: S<'a>, rand: S<'a>) -> S<'a> {
+pub fn unary_op<'a>(context: &Context<'a>, rator: S<'a>, rand: S<'a>) -> S<'a> {
     if equal(context, rator, C_ATOM) != C_NIL {
         atom(context, rand)
     } else {
@@ -1730,7 +1725,7 @@ pub fn unary_op<'a>(context: &'a Context<'a>, rator: S<'a>, rand: S<'a>) -> S<'a
     }
 }
 
-pub fn binary_op<'a>(context: &'a Context<'a>, rator: S<'a>, rand1: S<'a>, rand2: S<'a>) -> S<'a> {
+pub fn binary_op<'a>(context: &Context<'a>, rator: S<'a>, rand1: S<'a>, rand2: S<'a>) -> S<'a> {
     if equal(context, rator, C_EQUAL) != C_NIL {
         equal(context, rand1, rand2)
     } else {
@@ -1750,7 +1745,7 @@ pub fn binary_op<'a>(context: &'a Context<'a>, rator: S<'a>, rand1: S<'a>, rand2
     }
 }
 
-pub fn apply_op<'a>(context: &'a Context<'a>, rator: S<'a>, rands: S<'a>) -> S<'a> {
+pub fn apply_op<'a>(context: &Context<'a>, rator: S<'a>, rands: S<'a>) -> S<'a> {
     if is_member(context, rator, C_PAIR_13) != C_NIL {
         unary_op(context, rator, elem1(context, rands))
     } else {
@@ -1762,7 +1757,7 @@ pub fn apply_op<'a>(context: &'a Context<'a>, rator: S<'a>, rands: S<'a>) -> S<'
     }
 }
 
-pub fn rands<'a>(context: &'a Context<'a>, args: S<'a>) -> S<'a> {
+pub fn rands<'a>(context: &Context<'a>, args: S<'a>) -> S<'a> {
     if atom(context, args) != C_NIL {
         S::Empty
     } else {
@@ -1774,7 +1769,7 @@ pub fn rands<'a>(context: &'a Context<'a>, args: S<'a>) -> S<'a> {
     }
 }
 
-pub fn eval_op<'a>(context: &'a Context<'a>, app: S<'a>) -> S<'a> {
+pub fn eval_op<'a>(context: &Context<'a>, app: S<'a>) -> S<'a> {
     quote_c(
         context,
         apply_op(
@@ -1785,7 +1780,7 @@ pub fn eval_op<'a>(context: &'a Context<'a>, app: S<'a>) -> S<'a> {
     )
 }
 
-pub fn is_app_of_equal<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
+pub fn is_app_of_equal<'a>(context: &Context<'a>, e: S<'a>) -> S<'a> {
     if is_app(context, e) != C_NIL {
         equal(context, app_dot_name(context, e), C_EQUAL)
     } else {
@@ -1793,7 +1788,7 @@ pub fn is_app_of_equal<'a>(context: &'a Context<'a>, e: S<'a>) -> S<'a> {
     }
 }
 
-pub fn equality<'a>(context: &'a Context<'a>, focus: S<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
+pub fn equality<'a>(context: &Context<'a>, focus: S<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     if equal(context, focus, a) != C_NIL {
         b
     } else {
@@ -1806,7 +1801,7 @@ pub fn equality<'a>(context: &'a Context<'a>, focus: S<'a>, a: S<'a>, b: S<'a>) 
 }
 
 pub fn equality_slash_equation<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     focus: S<'a>,
     concl_inst: S<'a>,
 ) -> S<'a> {
@@ -1822,12 +1817,7 @@ pub fn equality_slash_equation<'a>(
     }
 }
 
-pub fn equality_slash_path<'a>(
-    context: &'a Context<'a>,
-    e: S<'a>,
-    path: S<'a>,
-    thm: S<'a>,
-) -> S<'a> {
+pub fn equality_slash_path<'a>(context: &Context<'a>, e: S<'a>, path: S<'a>, thm: S<'a>) -> S<'a> {
     if is_focus_is_at_path(context, path, e) != C_NIL {
         rewrite_focus_at_path(
             context,
@@ -1845,7 +1835,7 @@ pub fn equality_slash_path<'a>(
 }
 
 pub fn equality_slash_def<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     claim: S<'a>,
     path: S<'a>,
     app: S<'a>,
@@ -1904,7 +1894,7 @@ pub fn equality_slash_def<'a>(
 }
 
 pub fn rewrite_slash_step<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     defs: S<'a>,
     claim: S<'a>,
     step: S<'a>,
@@ -1919,7 +1909,7 @@ pub fn rewrite_slash_step<'a>(
 }
 
 pub fn rewrite_slash_continue<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     defs: S<'a>,
     steps: S<'a>,
     old: S<'a>,
@@ -1943,7 +1933,7 @@ pub fn rewrite_slash_continue<'a>(
 }
 
 pub fn rewrite_slash_steps<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     defs: S<'a>,
     claim: S<'a>,
     steps: S<'a>,
@@ -1962,7 +1952,7 @@ pub fn rewrite_slash_steps<'a>(
 }
 
 pub fn rewrite_slash_prove<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     defs: S<'a>,
     def: S<'a>,
     seed: S<'a>,
@@ -1990,7 +1980,7 @@ pub fn rewrite_slash_prove<'a>(
 }
 
 pub fn rewrite_slash_prove_plus_1<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     defs: S<'a>,
     pf: S<'a>,
     e: S<'a>,
@@ -2008,7 +1998,7 @@ pub fn rewrite_slash_prove_plus_1<'a>(
     }
 }
 
-pub fn rewrite_slash_prove_plus<'a>(context: &'a Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
+pub fn rewrite_slash_prove_plus<'a>(context: &Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
     if atom(context, pfs) != C_NIL {
         quote_c(context, C_T)
     } else {
@@ -2026,7 +2016,7 @@ pub fn rewrite_slash_prove_plus<'a>(context: &'a Context<'a>, defs: S<'a>, pfs: 
 }
 
 pub fn rewrite_slash_define<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     defs: S<'a>,
     def: S<'a>,
     seed: S<'a>,
@@ -2045,7 +2035,7 @@ pub fn rewrite_slash_define<'a>(
 }
 
 pub fn rewrite_slash_define_plus_1<'a>(
-    context: &'a Context<'a>,
+    context: &Context<'a>,
     defs1: S<'a>,
     defs2: S<'a>,
     pfs: S<'a>,
@@ -2072,7 +2062,7 @@ pub fn rewrite_slash_define_plus_1<'a>(
     }
 }
 
-pub fn rewrite_slash_define_plus<'a>(context: &'a Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
+pub fn rewrite_slash_define_plus<'a>(context: &Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
     if atom(context, pfs) != C_NIL {
         defs
     } else {
@@ -2091,12 +2081,7 @@ pub fn rewrite_slash_define_plus<'a>(context: &'a Context<'a>, defs: S<'a>, pfs:
     }
 }
 
-pub fn j_bob_slash_step<'a>(
-    context: &'a Context<'a>,
-    defs: S<'a>,
-    e: S<'a>,
-    steps: S<'a>,
-) -> S<'a> {
+pub fn j_bob_slash_step<'a>(context: &Context<'a>, defs: S<'a>, e: S<'a>, steps: S<'a>) -> S<'a> {
     if is_defs(context, S::Empty, defs) != C_NIL {
         if is_expr(context, defs, C_ANY, e) != C_NIL {
             if is_steps(context, defs, steps) != C_NIL {
@@ -2112,7 +2097,7 @@ pub fn j_bob_slash_step<'a>(
     }
 }
 
-pub fn j_bob_slash_prove<'a>(context: &'a Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
+pub fn j_bob_slash_prove<'a>(context: &Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
     if is_defs(context, S::Empty, defs) != C_NIL {
         if is_proofs(context, defs, pfs) != C_NIL {
             rewrite_slash_prove_plus(context, defs, pfs)
@@ -2124,7 +2109,7 @@ pub fn j_bob_slash_prove<'a>(context: &'a Context<'a>, defs: S<'a>, pfs: S<'a>) 
     }
 }
 
-pub fn j_bob_slash_define<'a>(context: &'a Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
+pub fn j_bob_slash_define<'a>(context: &Context<'a>, defs: S<'a>, pfs: S<'a>) -> S<'a> {
     if is_defs(context, S::Empty, defs) != C_NIL {
         if is_proofs(context, defs, pfs) != C_NIL {
             rewrite_slash_define_plus(context, defs, pfs)
@@ -2136,10 +2121,10 @@ pub fn j_bob_slash_define<'a>(context: &'a Context<'a>, defs: S<'a>, pfs: S<'a>)
     }
 }
 
-pub fn axioms<'a>(context: &'a Context<'a>) -> S<'a> {
+pub fn axioms<'a>(context: &Context<'a>) -> S<'a> {
     C_PAIR_284
 }
 
-pub fn prelude<'a>(context: &'a Context<'a>) -> S<'a> {
+pub fn prelude<'a>(context: &Context<'a>) -> S<'a> {
     j_bob_slash_define(context, axioms(context), C_PAIR_349)
 }

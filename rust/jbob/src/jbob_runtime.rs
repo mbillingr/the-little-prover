@@ -160,7 +160,7 @@ impl<'a> SexprFactory for Context<'a> {
 
 // predefined functions
 
-pub fn num<'a>(_: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn num<'a>(_: &Context<'a>, x: S<'a>) -> S<'a> {
     match x {
         S::Num(_) => x,
         _ => S::Num(0),
@@ -174,32 +174,32 @@ pub fn raw_num(x: S) -> i64 {
     }
 }
 
-pub fn atom<'a>(_: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn atom<'a>(_: &Context<'a>, x: S<'a>) -> S<'a> {
     match x {
         S::Pair(_) => C_NIL,
         _ => C_T,
     }
 }
 
-pub fn cons<'a>(context: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
+pub fn cons<'a>(context: &Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     context.cons(a, b)
 }
 
-pub fn car<'a>(_: &'a Context<'a>, p: S<'a>) -> S<'a> {
+pub fn car<'a>(_: &Context<'a>, p: S<'a>) -> S<'a> {
     match p {
         S::Pair(&(a, _)) => a,
         _ => S::Empty,
     }
 }
 
-pub fn cdr<'a>(_: &'a Context<'a>, p: S<'a>) -> S<'a> {
+pub fn cdr<'a>(_: &Context<'a>, p: S<'a>) -> S<'a> {
     match p {
         S::Pair(&(_, d)) => d,
         _ => S::Empty,
     }
 }
 
-pub fn equal<'a>(_: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
+pub fn equal<'a>(_: &Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     if a == b {
         C_T
     } else {
@@ -207,18 +207,18 @@ pub fn equal<'a>(_: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     }
 }
 
-pub fn natp<'a>(_: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn natp<'a>(_: &Context<'a>, x: S<'a>) -> S<'a> {
     match x {
         S::Num(n) if n >= 0 => C_T,
         _ => C_NIL,
     }
 }
 
-pub fn _plus<'a>(_: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
+pub fn _plus<'a>(_: &Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     return S::Num(raw_num(a) + raw_num(b));
 }
 
-pub fn _lt<'a>(_: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
+pub fn _lt<'a>(_: &Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     if raw_num(a) < raw_num(b) {
         C_T
     } else {
@@ -226,7 +226,7 @@ pub fn _lt<'a>(_: &'a Context<'a>, a: S<'a>, b: S<'a>) -> S<'a> {
     }
 }
 
-pub fn size<'a>(_: &'a Context<'a>, x: S<'a>) -> S<'a> {
+pub fn size<'a>(_: &Context<'a>, x: S<'a>) -> S<'a> {
     S::Num(raw_size(x))
 }
 

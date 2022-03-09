@@ -91,7 +91,7 @@ def analyze_statement(stmt):
 
 def analyze_definition(name, params, body):
     typed_formals = [
-        "context: &'a Context<'a>",
+        "context: &Context<'a>",
         *(f"{rustify(p)}: {RUST_VALUE_TYPE}" for p in params),
     ]
     typed_formals = ", ".join(typed_formals)
