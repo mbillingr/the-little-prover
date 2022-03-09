@@ -8,6 +8,9 @@ use jbob::{j_bob, jbob_runtime};
 pub struct TemplateApp<'a> {
     jbob_context: jbob_runtime::Context<'a>,
     jbob_defs: jbob_runtime::S<'a>,
+
+    #[cfg_attr(feature = "persistence", serde(skip))]
+    sexpr_view: SexprView<'a>,
     // this how you opt-out of serialization of a member
     //#[cfg_attr(feature = "persistence", serde(skip))]
     //value: f32,
@@ -16,9 +19,11 @@ pub struct TemplateApp<'a> {
 impl Default for TemplateApp<'_> {
     fn default() -> Self {
         let mut jbob_context = jbob_runtime::Context::new();
+        let jbob_defs = j_bob::prelude(&mut jbob_context);
         Self {
-            jbob_defs: j_bob::prelude(&mut jbob_context),
             jbob_context,
+            jbob_defs,
+            sexpr_view: SexprView::new(jbob_defs),
         }
     }
 }
@@ -71,7 +76,7 @@ impl<'a> epi::App for TemplateApp<'a> {
 
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.heading("Definitions");
-            ui.add(&mut SexprView::new(self.jbob_defs.into()));
+            ui.add(&mut self.sexpr_view);
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 ui.horizontal(|ui| {

@@ -1,18 +1,23 @@
 use eframe::egui;
+use jbob::jbob_runtime;
 use jbob_app::{Formatter, PrettyExpr, PrettyFormatter};
 use std::sync::Arc;
 
-pub struct SexprView {
-    expr: PrettyExpr<&'static str>,
+pub struct SexprView<'a> {
+    expr: jbob_runtime::S<'a>,
+    cached_layout: Option<((jbob_runtime::S<'a>, f32), Arc<egui::Galley>)>,
 }
 
-impl SexprView {
-    pub fn new(expr: PrettyExpr<&'static str>) -> Self {
-        SexprView { expr }
+impl<'a> SexprView<'a> {
+    pub fn new(expr: jbob_runtime::S<'a>) -> Self {
+        SexprView {
+            expr,
+            cached_layout: None,
+        }
     }
 }
 
-impl egui::Widget for &mut SexprView {
+impl<'a> egui::Widget for &mut SexprView<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let mut s = String::new();
         egui::ScrollArea::vertical().show(ui, |ui| {
@@ -20,13 +25,24 @@ impl egui::Widget for &mut SexprView {
                 egui::TextEdit::multiline(&mut s)
                     .desired_width(500.0)
                     .code_editor()
-                    .layouter(&mut |ui, _, w| sexpr_layouter(ui, self.expr.clone(), w)),
+                    .layouter(&mut |ui, _, w| {
+                        if let Some(((c_exp, c_w), cache)) = self.cached_layout.as_ref() {
+                            if *c_exp == self.expr && *c_w == w {
+                                return cache.clone();
+                            }
+                        }
+                        let cache = sexpr_layouter(ui, self.expr.into(), w);
+                        self.cached_layout = Some(((self.expr, w), cache.clone()));
+                        cache
+                    }),
             )
         });
 
         ui.label("hello")
     }
 }
+
+struct Highlighter {}
 
 fn sexpr_layouter(
     ui: &egui::Ui,
@@ -41,6 +57,8 @@ fn sexpr_layouter(
 
     let mut pf = PrettyFormatter::default();
     pf.max_code_width = max_row_len;
+
+    println!("laying out...");
 
     let pe = pf.pretty(expr);
     let mut f = LayoutJobFormatter::new(font_id);
