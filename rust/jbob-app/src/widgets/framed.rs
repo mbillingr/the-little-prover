@@ -1,6 +1,6 @@
-use crate::widgets::Widget;
 use crate::styles::Style;
 use crate::textbuffer::TextBuffer;
+use crate::widgets::Widget;
 
 const DEFAULT_FRAME: [char; 9] = ['╔', '═', '╗', '║', ' ', '║', '╚', '═', '╝'];
 

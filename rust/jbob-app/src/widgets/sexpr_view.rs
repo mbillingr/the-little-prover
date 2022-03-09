@@ -1,8 +1,8 @@
 use crate::events::Event;
-use crate::widgets::{EventHandler, Widget};
 use crate::styles::Style;
 use crate::sxfmt::{Formatter, PrettyExpr, PrettyFormatter};
 use crate::textbuffer::TextBuffer;
+use crate::widgets::{EventHandler, Widget};
 
 #[derive(Clone)]
 pub struct SexprView {

@@ -1,8 +1,8 @@
 use crate::textbuffer::TextBuffer;
 
 mod framed;
-mod sexpr_view;
 mod proof_view;
+mod sexpr_view;
 
 pub use framed::Framed;
 pub use sexpr_view::SexprView;

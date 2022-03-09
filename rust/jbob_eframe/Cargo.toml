@@ -14,6 +14,7 @@ crate-type = ["cdylib", "rlib"]
 eframe = "0.17.0" # Gives us egui, epi and web+native backends
 serde = { version = "1", features = ["derive"], optional = true }
 jbob = { path = "../jbob" }
+jbob-app = { path = "../jbob-app" }
 
 [features]
 default = []

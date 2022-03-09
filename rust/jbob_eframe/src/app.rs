@@ -1,32 +1,31 @@
 use crate::sexpr_view::SexprView;
-use eframe::egui::TextFormat;
 use eframe::{egui, epi};
+use jbob::{j_bob, jbob_runtime};
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
-pub struct TemplateApp {
-    // Example stuff:
-    label: String,
-
+pub struct TemplateApp<'a> {
+    jbob_context: jbob_runtime::Context<'a>,
+    jbob_defs: jbob_runtime::S<'a>,
     // this how you opt-out of serialization of a member
-    #[cfg_attr(feature = "persistence", serde(skip))]
-    value: f32,
+    //#[cfg_attr(feature = "persistence", serde(skip))]
+    //value: f32,
 }
 
-impl Default for TemplateApp {
+impl Default for TemplateApp<'_> {
     fn default() -> Self {
+        let mut jbob_context = jbob_runtime::Context::new();
         Self {
-            // Example stuff:
-            label: "Hello World!".to_owned(),
-            value: 2.7,
+            jbob_defs: j_bob::prelude(&mut jbob_context),
+            jbob_context,
         }
     }
 }
 
-impl epi::App for TemplateApp {
+impl<'a> epi::App for TemplateApp<'a> {
     fn name(&self) -> &str {
-        "eframe template"
+        "J/Bob GUI"
     }
 
     /// Called once before the first frame.
@@ -54,12 +53,10 @@ impl epi::App for TemplateApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, frame: &epi::Frame) {
-        let Self { label, value } = self;
-
-        // Examples of how to create different panels and windows.
-        // Pick whichever suits you.
-        // Tip: a good default choice is to just keep the `CentralPanel`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
+        let Self {
+            jbob_context: _jbob_ctx,
+            ..
+        } = self;
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
@@ -73,54 +70,8 @@ impl epi::App for TemplateApp {
         });
 
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
-            ui.heading("Side Panel");
-
-            ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(label);
-            });
-
-            ui.add(egui::Slider::new(value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                *value += 1.0;
-            }
-
-            ui.add(egui::Slider::new(value, 0.0..=100.0));
-
-            let mut layouter = |ui: &egui::Ui, _string: &str, wrap_width: f32| {
-                let mut layout_job = egui::text::LayoutJob::default();
-
-                let font_id = egui::FontId::monospace(14.0);
-                let char_width = ui.fonts().glyph_width(&font_id, '_');
-                // assuming all chars in a monospace font have the same width
-                let max_row_len = (wrap_width / char_width).floor() as usize - 1;
-
-                let mut text = String::new();
-                for mut l in "(i_*1\nfoo bar bla blubb epo ebba ibba yibba yabba\n)".lines() {
-                    while l.len() > max_row_len {
-                        text += &l[..max_row_len];
-                        text += "\n";
-                        l = &l[max_row_len..];
-                    }
-                    text += l;
-                    text += "\n";
-                }
-
-                let tf = TextFormat::simple(font_id, egui::Color32::BLUE);
-
-                layout_job.append(&text, 0.0, tf);
-                ui.fonts().layout_job(layout_job)
-            };
-
-            let mut s = "(foo bar bla blubb epo ebba ibba yibba yabba)".to_string();
-            ui.add(
-                egui::TextEdit::multiline(&mut s)
-                    .desired_width(500.0)
-                    .code_editor()
-                    .layouter(&mut layouter),
-            );
-
-            ui.add(&mut SexprView {});
+            ui.heading("Definitions");
+            ui.add(&mut SexprView::new(self.jbob_defs.into()));
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 ui.horizontal(|ui| {

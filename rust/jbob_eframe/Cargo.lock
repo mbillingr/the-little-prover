@@ -979,12 +979,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "jbob-app"
+version = "0.1.0"
+dependencies = [
+ "jbob",
+]
+
+[[package]]
 name = "jbob_eframe"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "eframe",
  "jbob",
+ "jbob-app",
  "serde",
  "tracing-wasm",
 ]
