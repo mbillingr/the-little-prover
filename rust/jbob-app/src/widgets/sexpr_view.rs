@@ -1,124 +1,16 @@
 use crate::events::Event;
+use crate::sexpr_editor::SexprEditor;
 use crate::styles::Style;
 use crate::sxfmt::{Formatter, PrettyExpr, PrettyFormatter};
 use crate::textbuffer::TextBuffer;
 use crate::widgets::{EventHandler, Widget};
 
 #[derive(Clone)]
-pub struct SexprView {
-    expr: PrettyExpr<Style>,
-    cursor: Vec<usize>,
-}
+pub struct SexprView(SexprEditor);
 
 impl SexprView {
     pub fn new(expr: PrettyExpr<Style>) -> Self {
-        SexprView {
-            expr,
-            cursor: vec![],
-        }
-    }
-
-    pub fn move_cursor_out_of_list(&mut self) {
-        self.cursor.pop();
-    }
-
-    pub fn move_cursor_into_list(&mut self) {
-        self.cursor.push(0);
-        if !self.expr.is_valid_path(&self.cursor) {
-            self.cursor.pop().unwrap();
-        }
-    }
-
-    pub fn move_cursor_in_list(&mut self, dir: i8) {
-        if self.cursor.is_empty() {
-            return;
-        }
-        let new_pos = self.cursor.pop().unwrap() as isize + dir as isize;
-        let l = self.expr.get(&self.cursor).unwrap().len() as isize;
-        let new_pos = (new_pos + l) % l as isize;
-        self.cursor.push(new_pos as usize);
-    }
-
-    pub fn append_at_cursor(&mut self, postfix: &str) {
-        let x = self.expr.get_mut(&self.cursor).unwrap();
-        if let Some(text) = x.get_text() {
-            let text = text.to_string() + postfix;
-            *x = PrettyExpr::Atom(text);
-        } else if x.is_empty_list() {
-            x.elements_mut()
-                .unwrap()
-                .push(PrettyExpr::Atom(postfix.to_string()));
-            self.move_cursor_into_list();
-        }
-    }
-
-    pub fn delete_at_cursor(&mut self) {
-        let x = self.expr.get_mut(&self.cursor).unwrap();
-        if let Some(text) = x.get_text() {
-            let mut text = text.to_string();
-            text.pop();
-            if text.is_empty() {
-                *x = PrettyExpr::list(vec![]);
-            } else {
-                *x = PrettyExpr::Atom(text);
-            }
-        }
-    }
-
-    pub fn delete_cursor_element(&mut self) {
-        match self.cursor.as_slice() {
-            [c_list @ .., c_elem] => {
-                let c_elem = *c_elem;
-                let x = self.expr.get_mut(c_list).unwrap();
-                x.remove_item(c_elem);
-                if x.is_empty_list() {
-                    self.cursor.pop();
-                } else {
-                    let last = self.cursor.last_mut().unwrap();
-                    *last = usize::min(c_elem, x.len() - 1)
-                }
-            }
-            [] => {} //self.expr = PrettyExpr::empty_list(),
-        }
-    }
-
-    pub fn insert_element_after_cursor(&mut self) {
-        match self.cursor.as_slice() {
-            [c_list @ .., c_elem] => {
-                let c_elem = *c_elem;
-                let x = self.expr.get_mut(c_list).unwrap();
-                if x.is_quotation() {
-                    self.move_cursor_out_of_list();
-                    self.insert_element_after_cursor();
-                } else {
-                    let elements = x.elements_mut().unwrap();
-                    elements.insert(c_elem + 1, PrettyExpr::empty_list());
-                    self.move_cursor_in_list(1);
-                }
-            }
-            _ => {}
-        }
-    }
-
-    pub fn quote_cursor(&mut self) {
-        let x = self.expr.get_mut(&self.cursor).unwrap();
-        let y = x.clone();
-        *x = PrettyExpr::quote(y);
-    }
-
-    pub fn wrap_cursor_in_list(&mut self) {
-        let x = self.expr.get_mut(&self.cursor).unwrap();
-        let y = x.clone();
-        *x = PrettyExpr::list(vec![y]);
-    }
-
-    pub fn unwrap_unary_list_at_cursor(&mut self) {
-        let x = self.expr.get_mut(&self.cursor).unwrap();
-        if let Some([y]) = x.elements() {
-            *x = y.clone();
-        } else if let Some(y) = x.quoted_value() {
-            *x = y.clone();
-        }
+        SexprView(SexprEditor::new(expr))
     }
 }
 
@@ -126,12 +18,12 @@ impl Widget for SexprView {
     fn draw(&self, buf: &mut TextBuffer, x: usize, y: usize, width: usize, height: usize) {
         let mut pf = PrettyFormatter::default();
         pf.max_code_width = width;
-        let mut pe = pf.pretty(self.expr.clone());
+        let mut pe = pf.pretty(self.0.expr().clone());
 
         pe = pe
             .with_style(&[], Style::Default)
             .unwrap()
-            .with_style(&self.cursor, Style::Highlight)
+            .with_style(self.0.cursor(), Style::Highlight)
             .unwrap();
 
         let mut tmp = TextBuffer::new(0, 0);
@@ -157,25 +49,25 @@ impl EventHandler<Event> for SexprView {
     fn handle_event(&mut self, event: &Event) -> bool {
         use Event::*;
         match event {
-            NavLeft => self.move_cursor_out_of_list(),
-            NavRight => self.move_cursor_into_list(),
-            NavDown => self.move_cursor_in_list(1),
-            NavUp => self.move_cursor_in_list(-1),
-            EditWrap => self.wrap_cursor_in_list(),
-            EditUnwrap => self.unwrap_unary_list_at_cursor(),
-            EditDelete => self.delete_cursor_element(),
+            NavLeft => self.0.move_cursor_out_of_list(),
+            NavRight => self.0.move_cursor_into_list(),
+            NavDown => self.0.move_cursor_in_list(1),
+            NavUp => self.0.move_cursor_in_list(-1),
+            EditWrap => self.0.wrap_cursor_in_list(),
+            EditUnwrap => self.0.unwrap_unary_list_at_cursor(),
+            EditDelete => self.0.delete_cursor_element(),
             Edit('\'') => {
-                self.quote_cursor();
-                self.move_cursor_into_list();
+                self.0.quote_cursor();
+                self.0.move_cursor_into_list();
             }
             Edit('(') => {
-                self.wrap_cursor_in_list();
-                self.move_cursor_into_list();
+                self.0.wrap_cursor_in_list();
+                self.0.move_cursor_into_list();
             }
-            Edit(')') => self.move_cursor_out_of_list(),
-            Edit(' ') => self.insert_element_after_cursor(),
-            Edit(ch) => self.append_at_cursor(&ch.to_string()),
-            EditBackspace => self.delete_at_cursor(),
+            Edit(')') => self.0.move_cursor_out_of_list(),
+            Edit(' ') => self.0.insert_element_after_cursor(),
+            Edit(ch) => self.0.append_at_cursor(&ch.to_string()),
+            EditBackspace => self.0.delete_at_cursor(),
             _ => return false,
         }
         true
