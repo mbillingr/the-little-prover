@@ -10,7 +10,7 @@ pub struct TemplateApp<'a> {
     //jbob_defs: jbob_runtime::S<'a>,
 
     #[cfg_attr(feature = "persistence", serde(skip))]
-    sexpr_view: SexprView<'a>,
+    sexpr_view: SexprView,
     // this how you opt-out of serialization of a member
     //#[cfg_attr(feature = "persistence", serde(skip))]
     //value: f32,
