@@ -184,23 +184,24 @@ impl<T> PrettyExpr<T> {
         }
     }
 
-    fn inline_width(&self) -> usize {
+    fn inline_width(&self) -> Option<usize> {
         match self {
-            PrettyExpr::Atom(x) => x.len(),
-            PrettyExpr::Stat(x) => x.len(),
-            PrettyExpr::Quote(x) => 1 + x.inline_width(),
-            PrettyExpr::Inline(xs) => {
-                let n_spaces = if xs.len() < 2 { 0 } else { xs.len() - 1 };
-                2 + xs.iter().map(PrettyExpr::inline_width).sum::<usize>() + n_spaces
-            }
+            PrettyExpr::Atom(x) => Some(x.len()),
+            PrettyExpr::Stat(x) => Some(x.len()),
+            PrettyExpr::Quote(x) => Some(1 + x.inline_width()?),
+            PrettyExpr::Inline(xs) => Some(1 + Self::partial_width(xs)?),
             PrettyExpr::Style(_, x) => x.inline_width(),
-            PrettyExpr::Expand(_) | PrettyExpr::SemiExpand(_, _) => unimplemented!(),
+            PrettyExpr::Expand(_) | PrettyExpr::SemiExpand(_, _) => None,
         }
     }
 
-    fn partial_width(xs: &[PrettyExpr<T>]) -> usize {
+    fn partial_width(xs: &[PrettyExpr<T>]) -> Option<usize> {
         let n_spaces = if xs.len() < 2 { 0 } else { xs.len() - 1 };
-        1 + xs.iter().map(PrettyExpr::inline_width).sum::<usize>() + n_spaces
+        let mut w = 1 + n_spaces;
+        for x in xs {
+            w += x.inline_width()?;
+        }
+        Some(w)
     }
 }
 
@@ -252,7 +253,9 @@ impl PrettyFormatter {
         match pe {
             PrettyExpr::Atom(x) => PrettyExpr::Atom(x),
             PrettyExpr::Stat(x) => PrettyExpr::Stat(x),
-            PrettyExpr::Inline(_) if current_indent + pe.inline_width() <= self.max_code_width => {
+            PrettyExpr::Inline(_)
+                if current_indent + pe.inline_width().unwrap() <= self.max_code_width =>
+            {
                 pe
             }
             PrettyExpr::Inline(xs) | PrettyExpr::Expand(xs) | PrettyExpr::SemiExpand(_, xs) => {
@@ -282,6 +285,10 @@ impl PrettyFormatter {
         current_indent: usize,
         new_indent: usize,
     ) -> Result<PrettyExpr<T>, Vec<PrettyExpr<T>>> {
+        if xs.is_empty() {
+            return Err(xs)
+        }
+
         let n_inline = match xs.first().and_then(PrettyExpr::get_text) {
             Some("defun") | Some("dethm") => 3,
             Some("if") => 2,
@@ -289,7 +296,10 @@ impl PrettyFormatter {
             _ => 1,
         };
 
-        if current_indent + PrettyExpr::partial_width(&xs[..n_inline]) <= self.max_code_width {
+        if PrettyExpr::partial_width(&xs[..n_inline])
+            .map(|w| w + current_indent <= self.max_code_width)
+            == Some(true)
+        {
             let mut xs = xs.into_iter();
             let mut ys = vec![];
             for _ in 0..n_inline {
@@ -371,9 +381,10 @@ impl PrettyFormatter {
             }
             [xs @ ..] => {
                 indent_level += self.compute_expand_indent(xs.first().unwrap());
-                for x in &xs[..n_inline] {
-                    self.write(x, indent_level, f)?;
+                self.write(xs.first().unwrap(), indent_level, f)?;
+                for x in &xs[1..n_inline] {
                     f.write(" ")?;
+                    self.write(x, indent_level, f)?;
                 }
                 for x in &xs[n_inline..] {
                     f.write_indent(indent_level)?;
@@ -464,12 +475,12 @@ fn tests() {
         ($($x:tt)*) => {pe!($($x)*) as PrettyExpr::<()>};
     }
 
-    assert_eq!(p!["abc"].inline_width(), 3);
-    assert_eq!(p![abcde].inline_width(), 5);
-    assert_eq!(p![()].inline_width(), 2);
-    assert_eq!(p![(abc)].inline_width(), 5);
-    assert_eq!(p![(a b c)].inline_width(), 7);
-    assert_eq!(p![(let ((a 1) (b 2)) ("+" a b))].inline_width(), 27);
+    assert_eq!(p!["abc"].inline_width(), Some(3));
+    assert_eq!(p![abcde].inline_width(), Some(5));
+    assert_eq!(p![()].inline_width(), Some(2));
+    assert_eq!(p![(abc)].inline_width(), Some(5));
+    assert_eq!(p![(a b c)].inline_width(), Some(7));
+    assert_eq!(p![(let ((a 1) (b 2)) ("+" a b))].inline_width(), Some(27));
 
     let pf = PrettyFormatter::new(15, 2);
 
