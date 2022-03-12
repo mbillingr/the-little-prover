@@ -35,7 +35,7 @@ pub fn pretty_to_s<'a, T>(context: &mut Context<'a>, expr: &PrettyExpr<T>) -> S<
             let x = pretty_to_s(context, x);
             context.cons(S::Symbol("quote"), context.cons(x, S::Empty))
         }
-        PrettyExpr::Inline(xs) | PrettyExpr::Expand(xs) => {
+        PrettyExpr::Inline(xs) | PrettyExpr::Expand(xs) | PrettyExpr::SemiExpand(_, xs) => {
             let xs = xs.iter().map(|x| pretty_to_s(context, x)).collect();
             context.list(xs)
         }
