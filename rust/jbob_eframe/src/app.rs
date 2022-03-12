@@ -7,7 +7,7 @@ use jbob::{j_bob, jbob_runtime};
 #[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
 pub struct TemplateApp<'a> {
     jbob_context: jbob_runtime::Context<'a>,
-    jbob_defs: jbob_runtime::S<'a>,
+    //jbob_defs: jbob_runtime::S<'a>,
 
     #[cfg_attr(feature = "persistence", serde(skip))]
     sexpr_view: SexprView<'a>,
@@ -22,7 +22,7 @@ impl Default for TemplateApp<'_> {
         let jbob_defs = j_bob::prelude(&mut jbob_context);
         Self {
             jbob_context,
-            jbob_defs,
+            //jbob_defs,
             sexpr_view: SexprView::new(jbob_defs),
         }
     }

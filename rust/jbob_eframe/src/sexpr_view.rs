@@ -42,8 +42,6 @@ impl<'a> egui::Widget for &mut SexprView<'a> {
     }
 }
 
-struct Highlighter {}
-
 fn sexpr_layouter(
     ui: &egui::Ui,
     expr: PrettyExpr<&'static str>,
