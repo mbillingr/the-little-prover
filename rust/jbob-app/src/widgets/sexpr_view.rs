@@ -49,10 +49,10 @@ impl EventHandler<Event> for SexprView {
     fn handle_event(&mut self, event: &Event) -> bool {
         use Event::*;
         match event {
-            NavLeft => self.0.move_cursor_out_of_list(),
-            NavRight => self.0.move_cursor_into_list(),
-            NavDown => self.0.move_cursor_in_list(1),
-            NavUp => self.0.move_cursor_in_list(-1),
+            NavNext => self.0.move_cursor_next(),
+            NavPrev => self.0.move_cursor_prev(),
+            NavNextFast => self.0.advance_cursor(),
+            NavPrevFast => self.0.unadvance_cursor(),
             EditWrap => self.0.wrap_cursor_in_list(),
             EditUnwrap => self.0.unwrap_unary_list_at_cursor(),
             EditDelete => self.0.delete_cursor_element(),

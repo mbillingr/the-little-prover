@@ -1,11 +1,11 @@
 mod events;
 mod proof;
 pub mod sexpr_adapter;
+pub mod sexpr_editor;
 mod styles;
 mod sxfmt;
 mod textbuffer;
 pub mod widgets;
-pub mod sexpr_editor;
 
 pub use events::Event;
 pub use styles::Style;

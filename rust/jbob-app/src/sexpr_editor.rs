@@ -1,5 +1,5 @@
 use crate::styles::Style;
-use crate::sxfmt::{PrettyExpr};
+use crate::sxfmt::PrettyExpr;
 
 #[derive(Clone)]
 pub struct SexprEditor {
@@ -23,15 +23,22 @@ impl SexprEditor {
         &self.cursor
     }
 
+    fn try_push_cursor(&mut self) -> bool {
+        self.cursor.push(0);
+        if self.expr.is_valid_path(&self.cursor) {
+            true
+        } else {
+            self.cursor.pop().unwrap();
+            false
+        }
+    }
+
     pub fn move_cursor_out_of_list(&mut self) {
         self.cursor.pop();
     }
 
     pub fn move_cursor_into_list(&mut self) {
-        self.cursor.push(0);
-        if !self.expr.is_valid_path(&self.cursor) {
-            self.cursor.pop().unwrap();
-        }
+        self.try_push_cursor();
     }
 
     pub fn move_cursor_in_list(&mut self, dir: i8) {
@@ -42,6 +49,50 @@ impl SexprEditor {
         let l = self.expr.get(&self.cursor).unwrap().len() as isize;
         let new_pos = (new_pos + l) % l as isize;
         self.cursor.push(new_pos as usize);
+    }
+
+    pub fn move_cursor_next(&mut self) {
+        if !self.try_push_cursor() {
+            self.advance_cursor()
+        }
+    }
+
+    pub fn advance_cursor(&mut self) {
+        while !self.cursor.is_empty() {
+            *self.cursor.last_mut().unwrap() += 1;
+
+            if self.expr.is_valid_path(&self.cursor) {
+                return;
+            } else {
+                self.cursor.pop();
+            }
+        }
+    }
+
+    pub fn move_cursor_prev(&mut self) {
+        match self.cursor.last_mut() {
+            None => self.cursor = self.expr.path_to_last_element().into(),
+            Some(0) => {
+                self.cursor.pop();
+            }
+            Some(c) => {
+                *c -= 1;
+                let p = self.expr.get(self.cursor()).unwrap().path_to_last_element();
+                self.cursor.extend(p);
+            }
+        }
+    }
+
+    pub fn unadvance_cursor(&mut self) {
+        match self.cursor.last_mut() {
+            Some(0) => {
+                self.cursor.pop();
+            }
+            Some(c) => {
+                *c -= 1;
+            }
+            _ => {}
+        }
     }
 
     pub fn append_at_cursor(&mut self, postfix: &str) {

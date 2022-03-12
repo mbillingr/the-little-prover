@@ -1,5 +1,6 @@
 //! S-Expression pretty-printing
 
+use std::collections::VecDeque;
 use std::marker::PhantomData;
 
 #[derive(Debug, Clone)]
@@ -45,6 +46,27 @@ impl<T> PrettyExpr<T> {
 
     pub fn is_valid_path(&self, path: &[usize]) -> bool {
         self.get(path).is_some()
+    }
+
+    pub fn path_to_last_element(&self) -> VecDeque<usize> {
+        use PrettyExpr::*;
+        match self {
+            Atom(_) | Stat(_) => VecDeque::new(),
+            Quote(x) => {
+                let mut path = x.path_to_last_element();
+                path.push_front(1);
+                path
+            }
+            Inline(xs) | Expand(xs) | SemiExpand(_, xs) => match xs.last() {
+                None => VecDeque::new(),
+                Some(x) => {
+                    let mut path = x.path_to_last_element();
+                    path.push_front(xs.len() - 1);
+                    path
+                }
+            },
+            Style(_, x) => x.path_to_last_element(),
+        }
     }
 
     pub fn get(&self, path: &[usize]) -> Option<&Self> {
@@ -286,7 +308,7 @@ impl PrettyFormatter {
         new_indent: usize,
     ) -> Result<PrettyExpr<T>, Vec<PrettyExpr<T>>> {
         if xs.is_empty() {
-            return Err(xs)
+            return Err(xs);
         }
 
         let n_inline = match xs.first().and_then(PrettyExpr::get_text) {

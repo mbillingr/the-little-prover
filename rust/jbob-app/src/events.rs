@@ -6,8 +6,8 @@ pub enum Event {
     EditDelete,
     EditWrap,
     EditUnwrap,
-    NavLeft,
-    NavRight,
-    NavUp,
-    NavDown,
+    NavPrev,
+    NavNext,
+    NavPrevFast,
+    NavNextFast,
 }

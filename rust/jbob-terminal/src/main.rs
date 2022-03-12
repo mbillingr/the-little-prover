@@ -1,4 +1,4 @@
-use crossterm::event::{poll, KeyEvent};
+use crossterm::event::{poll, KeyEvent, KeyModifiers};
 use crossterm::event::{read, Event, KeyCode};
 use crossterm::style::Stylize;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
@@ -128,6 +128,7 @@ fn adapt_style(s: jbob_app::Style) -> style::ContentStyle {
 pub fn adapt_event(e: crossterm::event::Event) -> jbob_app::Event {
     use crossterm::event::Event as X;
     use crossterm::event::KeyCode::*;
+    use crossterm::event::KeyModifiers;
     use jbob_app::Event as Y;
     match e {
         X::Key(KeyEvent { code: Char(ch), .. }) => Y::Edit(ch),
@@ -135,12 +136,16 @@ pub fn adapt_event(e: crossterm::event::Event) -> jbob_app::Event {
             code: Backspace, ..
         }) => Y::EditBackspace,
         X::Key(KeyEvent { code: Delete, .. }) => Y::EditDelete,
-        X::Key(KeyEvent { code: Left, .. }) => Y::NavLeft,
         X::Key(KeyEvent { code: PageDown, .. }) => Y::EditWrap,
         X::Key(KeyEvent { code: PageUp, .. }) => Y::EditUnwrap,
-        X::Key(KeyEvent { code: Right, .. }) => Y::NavRight,
-        X::Key(KeyEvent { code: Up, .. }) => Y::NavUp,
-        X::Key(KeyEvent { code: Down, .. }) => Y::NavDown,
+        X::Key(KeyEvent { code: KeyCode::Left, modifiers}) if modifiers == KeyModifiers::CONTROL => Y::NavPrevFast,
+        X::Key(KeyEvent { code: KeyCode::Right, modifiers}) if modifiers == KeyModifiers::CONTROL => Y::NavNextFast,
+        X::Key(KeyEvent { code: KeyCode::Up, modifiers}) if modifiers == KeyModifiers::CONTROL => Y::NavPrevFast,
+        X::Key(KeyEvent { code: KeyCode::Down, modifiers}) if modifiers == KeyModifiers::CONTROL => Y::NavNextFast,
+        X::Key(KeyEvent { code: Left, .. }) => Y::NavPrev,
+        X::Key(KeyEvent { code: Right, .. }) => Y::NavNext,
+        X::Key(KeyEvent { code: Up, .. }) => Y::NavPrev,
+        X::Key(KeyEvent { code: Down, .. }) => Y::NavNext,
         _ => Y::Unknown,
     }
 }
