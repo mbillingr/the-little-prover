@@ -7,6 +7,9 @@ impl<T> From<S<'_>> for PrettyExpr<T> {
             S::Empty => PrettyExpr::empty_list(),
             S::Num(n) => PrettyExpr::Atom(n.to_string()),
             S::Symbol(s) => PrettyExpr::Atom(s.to_string()),
+            S::Pair(&(S::Symbol("quote"), S::Pair(&(x, S::Empty)))) => {
+                PrettyExpr::Quote(Box::new(x.into()))
+            }
             S::Pair(_) => {
                 let mut list = vec![];
                 let mut p = expr;

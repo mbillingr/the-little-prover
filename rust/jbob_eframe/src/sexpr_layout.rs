@@ -39,7 +39,7 @@ fn sexpr_layouter(ui: &egui::Ui, expr: Sexpr, wrap_width: f32) -> Arc<egui::Gall
     let mut pf = PrettyFormatter::default();
     pf.max_code_width = max_row_len;
 
-    let pe = pf.pretty(expr);
+    let pe = pf.pretty(expr.highlight());
     let mut f = LayoutJobFormatter::new(font_id);
     pe.write(&mut f).unwrap();
 
@@ -49,6 +49,7 @@ fn sexpr_layouter(ui: &egui::Ui, expr: Sexpr, wrap_width: f32) -> Arc<egui::Gall
 struct LayoutJobFormatter {
     layout_job: egui::text::LayoutJob,
     current_style: egui::TextFormat,
+    saved_styles: Vec<egui::TextFormat>,
 }
 
 impl LayoutJobFormatter {
@@ -56,6 +57,7 @@ impl LayoutJobFormatter {
         LayoutJobFormatter {
             layout_job: Default::default(),
             current_style: egui::TextFormat::simple(font_id, egui::Color32::DARK_BLUE),
+            saved_styles: vec![],
         }
     }
 }
@@ -68,11 +70,21 @@ impl Formatter<Style> for LayoutJobFormatter {
         Ok(())
     }
 
-    fn set_style(&mut self, _style: &Style) {}
+    fn set_style(&mut self, style: &Style) {
+        match style {
+            Style::Quote => self.current_style.color = egui::Color32::RED,
+            Style::Keyword => self.current_style.color = egui::Color32::BLUE,
+            _ => self.current_style.color = egui::Color32::DARK_BLUE,
+        }
+    }
 
-    fn save_style(&mut self) {}
+    fn save_style(&mut self) {
+        self.saved_styles.push(self.current_style.clone())
+    }
 
-    fn restore_style(&mut self) {}
+    fn restore_style(&mut self) {
+        self.current_style = self.saved_styles.pop().unwrap();
+    }
 }
 
 impl From<LayoutJobFormatter> for egui::text::LayoutJob {
