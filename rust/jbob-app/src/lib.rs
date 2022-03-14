@@ -11,3 +11,5 @@ pub use events::Event;
 pub use styles::Style;
 pub use sxfmt::{Formatter, PrettyExpr, PrettyFormatter};
 pub use textbuffer::{RenderTarget, TextBuffer};
+
+pub type Sexpr = PrettyExpr<Style>;

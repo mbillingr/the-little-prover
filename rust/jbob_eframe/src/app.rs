@@ -1,3 +1,4 @@
+use crate::sexpr_editor::SexprEditor;
 use crate::sexpr_view::SexprView;
 use eframe::{egui, epi};
 use jbob::{j_bob, jbob_runtime};
@@ -8,7 +9,6 @@ use jbob::{j_bob, jbob_runtime};
 pub struct TemplateApp<'a> {
     jbob_context: jbob_runtime::Context<'a>,
     //jbob_defs: jbob_runtime::S<'a>,
-
     #[cfg_attr(feature = "persistence", serde(skip))]
     sexpr_view: SexprView,
     // this how you opt-out of serialization of a member
@@ -99,6 +99,8 @@ impl<'a> epi::App for TemplateApp<'a> {
                 "Source code."
             ));
             egui::warn_if_debug_build(ui);
+
+            ui.add(&mut SexprEditor::new())
         });
 
         if false {

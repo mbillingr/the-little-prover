@@ -3,6 +3,8 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
 mod app;
+mod sexpr_editor;
+mod sexpr_layout;
 mod sexpr_view;
 
 pub use app::TemplateApp;
