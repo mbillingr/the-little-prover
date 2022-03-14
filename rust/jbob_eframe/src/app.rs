@@ -11,6 +11,9 @@ pub struct TemplateApp<'a> {
     //jbob_defs: jbob_runtime::S<'a>,
     #[cfg_attr(feature = "persistence", serde(skip))]
     sexpr_view: SexprView,
+
+    editor: SexprEditor,
+
     // this how you opt-out of serialization of a member
     //#[cfg_attr(feature = "persistence", serde(skip))]
     //value: f32,
@@ -24,6 +27,7 @@ impl Default for TemplateApp<'_> {
             jbob_context,
             //jbob_defs,
             sexpr_view: SexprView::new(jbob_defs),
+            editor: SexprEditor::new(),
         }
     }
 }
@@ -100,7 +104,7 @@ impl<'a> epi::App for TemplateApp<'a> {
             ));
             egui::warn_if_debug_build(ui);
 
-            ui.add(&mut SexprEditor::new())
+            ui.add(&mut self.editor)
         });
 
         if false {
