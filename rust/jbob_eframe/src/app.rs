@@ -13,7 +13,6 @@ pub struct TemplateApp<'a> {
     sexpr_view: SexprView,
 
     editor: SexprEditor,
-
     // this how you opt-out of serialization of a member
     //#[cfg_attr(feature = "persistence", serde(skip))]
     //value: f32,
