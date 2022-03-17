@@ -1,7 +1,7 @@
 use crate::sexpr_layout::{build_sexpr_ui, SexprLayout};
 use eframe::egui;
-use eframe::egui::{Event, Key, Modifiers};
-use jbob_app::PrettyExpr;
+use eframe::egui::{Event, Key, Modifiers, Sense};
+use jbob_app::{PrettyExpr, Style};
 
 pub struct SexprEditor {
     editor: jbob_app::sexpr_editor::SexprEditor,
@@ -25,44 +25,29 @@ impl SexprEditor {
 
 impl egui::Widget for &mut SexprEditor {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let mut s = String::new();
-        let mut output = egui::TextEdit::multiline(&mut s)
-            .desired_width(500.0)
-            .interactive(false)
-            .layouter(&mut |ui, _, w| self.layout.compute_once(ui, self.editor.expr(), w))
-            .show(ui);
-        let response = output.response;
+        let mut expr = self.editor.expr().clone();
 
-        ui.horizontal(|ui| {
-            ui.monospace("foo bar foo");
-            ui.monospace("bar")
-        });
-        ui.horizontal(|ui| {
-            ui.monospace("    indented");
-            ui.monospace("ar")
-        });
-        ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = 0.0;
-            ui.monospace("foo");
-            ui.monospace("bar")
-        });
-        ui.monospace("hi");
-
-        build_sexpr_ui(
-            ui,
-            self.editor.expr().clone(),
-            egui::FontId::monospace(14.0),
-            ui.min_size().x,
-        );
-
-        /*let lbl = egui::Button::new(self.layout.compute_once(ui, self.editor.expr(), 250.0));
-        let response = ui.add(lbl);*/
-
-        if response.has_focus() {
+        if ui.memory().has_focus(ui.id()) {
             let mut input = ui.input_mut();
 
             for event in &input.events {
                 match event {
+                    Event::Key {
+                        key: Key::ArrowRight,
+                        pressed: true,
+                        ..
+                    } => {
+                        self.editor.move_cursor_next();
+                        self.layout.clear();
+                    }
+                    Event::Key {
+                        key: Key::ArrowLeft,
+                        pressed: true,
+                        ..
+                    } => {
+                        self.editor.move_cursor_prev();
+                        self.layout.clear();
+                    }
                     Event::Text(s) => {
                         self.editor.append_at_cursor(s);
                         self.layout.clear();
@@ -70,8 +55,20 @@ impl egui::Widget for &mut SexprEditor {
                     _ => println!("{:?}", event),
                 }
             }
+
+            // abuse expr styling for highlighting the cursor position
+            expr = expr
+                .with_style(self.editor.cursor(), Style::Highlight)
+                .unwrap();
         }
 
-        response
+        build_sexpr_ui(
+            ui,
+            expr,
+            egui::FontId::monospace(14.0),
+            ui.max_rect().width(),
+        );
+
+        ui.interact(ui.min_rect(), ui.id(), Sense::click())
     }
 }

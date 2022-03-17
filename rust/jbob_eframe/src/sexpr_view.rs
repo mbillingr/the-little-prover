@@ -1,4 +1,4 @@
-use crate::sexpr_layout::SexprLayout;
+use crate::sexpr_layout::{build_sexpr_ui, SexprLayout};
 use eframe::egui;
 use jbob_app::Sexpr;
 
@@ -25,15 +25,15 @@ impl egui::Widget for &mut SexprView {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let mut s = String::new();
         egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.add(
-                egui::TextEdit::multiline(&mut s)
-                    .desired_width(500.0)
-                    .code_editor()
-                    .layouter(&mut |ui, _, w| self.layout.compute_once(ui, &self.expr, w)),
-            )
+            build_sexpr_ui(
+                ui,
+                self.expr.clone(),
+                egui::FontId::monospace(14.0),
+                ui.max_rect().width(),
+            );
         });
 
         // todo: how can we return a Response without creating another widget?
-        ui.label("hello")
+        ui.label("")
     }
 }

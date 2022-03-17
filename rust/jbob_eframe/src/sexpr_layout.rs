@@ -1,5 +1,6 @@
 use eframe::egui;
 use jbob_app::{Formatter, PrettyFormatter, Sexpr, Style};
+use std::rc::Rc;
 use std::sync::Arc;
 
 pub struct SexprLayout {
@@ -96,7 +97,7 @@ impl From<LayoutJobFormatter> for egui::text::LayoutJob {
 pub fn build_sexpr_ui(ui: &mut egui::Ui, expr: Sexpr, font: egui::FontId, wrap_width: f32) {
     let char_width = ui.fonts().glyph_width(&font, '_');
     // assuming all chars in a monospace font have the same width
-    let max_row_len = (wrap_width / char_width).floor() as usize - 1;
+    let max_row_len = (wrap_width / char_width).floor().max(1.0) as usize - 1;
 
     let mut pf = PrettyFormatter::default();
     pf.max_code_width = max_row_len;
@@ -111,8 +112,8 @@ struct UiFormatter<'a> {
     ui: &'a mut egui::Ui,
     fragment: String,
     current_line: LineWriter,
-    current_style: fn(egui::RichText) -> egui::RichText,
-    saved_styles: Vec<fn(egui::RichText) -> egui::RichText>,
+    current_style: egui::TextFormat,
+    saved_styles: Vec<egui::TextFormat>,
 }
 
 impl<'a> UiFormatter<'a> {
@@ -121,14 +122,17 @@ impl<'a> UiFormatter<'a> {
             ui,
             fragment: String::new(),
             current_line: LineWriter::new(),
-            current_style: |x| x,
+            current_style: egui::TextFormat::default(),
             saved_styles: vec![],
         }
     }
 
     fn new_fragment(&mut self) {
         let text = std::mem::replace(&mut self.fragment, String::new());
-        let styled_text = (self.current_style)(egui::RichText::new(text).monospace());
+        let styled_text = egui::RichText::new(text)
+            .monospace()
+            .color(self.current_style.color)
+            .background_color(self.current_style.background);
         self.current_line.append(styled_text);
     }
 }
@@ -143,14 +147,15 @@ impl Formatter<Style> for UiFormatter<'_> {
     fn set_style(&mut self, style: &Style) {
         self.new_fragment();
         match style {
-            Style::Quote => self.current_style = |x| x.color(egui::Color32::RED),
-            Style::Keyword => self.current_style = |x| x.color(egui::Color32::BLUE),
-            _ => self.current_style = |x| x,
+            Style::Quote => self.current_style.color = egui::Color32::RED,
+            Style::Keyword => self.current_style.color = egui::Color32::BLUE,
+            Style::Highlight => self.current_style.background = egui::Color32::LIGHT_BLUE,
+            _ => self.current_style = egui::TextFormat::default(),
         }
     }
 
     fn save_style(&mut self) {
-        self.saved_styles.push(self.current_style)
+        self.saved_styles.push(self.current_style.clone())
     }
 
     fn restore_style(&mut self) {
