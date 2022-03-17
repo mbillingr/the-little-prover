@@ -92,3 +92,100 @@ impl From<LayoutJobFormatter> for egui::text::LayoutJob {
         ljf.layout_job
     }
 }
+
+pub fn build_sexpr_ui(ui: &mut egui::Ui, expr: Sexpr, font: egui::FontId, wrap_width: f32) {
+    let char_width = ui.fonts().glyph_width(&font, '_');
+    // assuming all chars in a monospace font have the same width
+    let max_row_len = (wrap_width / char_width).floor() as usize - 1;
+
+    let mut pf = PrettyFormatter::default();
+    pf.max_code_width = max_row_len;
+
+    let pe = pf.pretty(expr.highlight());
+    let mut f = UiFormatter::new(ui);
+    pe.write(&mut f).unwrap();
+    f.write_newline().unwrap();
+}
+
+struct UiFormatter<'a> {
+    ui: &'a mut egui::Ui,
+    fragment: String,
+    current_line: LineWriter,
+    current_style: fn(egui::RichText) -> egui::RichText,
+    saved_styles: Vec<fn(egui::RichText) -> egui::RichText>,
+}
+
+impl<'a> UiFormatter<'a> {
+    pub fn new(ui: &'a mut egui::Ui) -> Self {
+        UiFormatter {
+            ui,
+            fragment: String::new(),
+            current_line: LineWriter::new(),
+            current_style: |x| x,
+            saved_styles: vec![],
+        }
+    }
+
+    fn new_fragment(&mut self) {
+        let text = std::mem::replace(&mut self.fragment, String::new());
+        let styled_text = (self.current_style)(egui::RichText::new(text).monospace());
+        self.current_line.append(styled_text);
+    }
+}
+
+impl Formatter<Style> for UiFormatter<'_> {
+    type Error = ();
+    fn write(&mut self, x: impl std::fmt::Display) -> std::result::Result<(), Self::Error> {
+        self.fragment.push_str(&x.to_string());
+        Ok(())
+    }
+
+    fn set_style(&mut self, style: &Style) {
+        self.new_fragment();
+        match style {
+            Style::Quote => self.current_style = |x| x.color(egui::Color32::RED),
+            Style::Keyword => self.current_style = |x| x.color(egui::Color32::BLUE),
+            _ => self.current_style = |x| x,
+        }
+    }
+
+    fn save_style(&mut self) {
+        self.saved_styles.push(self.current_style)
+    }
+
+    fn restore_style(&mut self) {
+        self.new_fragment();
+        self.current_style = self.saved_styles.pop().unwrap();
+    }
+
+    fn write_newline(&mut self) -> std::result::Result<(), Self::Error> {
+        self.new_fragment();
+
+        let line = std::mem::replace(&mut self.current_line, LineWriter::new());
+        line.write(self.ui);
+        Ok(())
+    }
+}
+
+struct LineWriter {
+    parts: Vec<egui::RichText>,
+}
+
+impl LineWriter {
+    fn new() -> Self {
+        LineWriter { parts: vec![] }
+    }
+
+    fn append(&mut self, text: egui::RichText) {
+        self.parts.push(text)
+    }
+
+    fn write(self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 0.0;
+            for text in self.parts {
+                ui.add(egui::Label::new(text));
+            }
+        });
+    }
+}
