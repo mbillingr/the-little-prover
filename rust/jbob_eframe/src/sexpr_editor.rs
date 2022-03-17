@@ -54,6 +54,7 @@ impl egui::Widget for &mut SexprEditor {
                     }
                     _ => println!("{:?}", event),
                 }
+                println!("{:?}", self.editor.cursor());
             }
 
             // abuse expr styling for highlighting the cursor position

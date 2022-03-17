@@ -54,7 +54,7 @@ impl<T> PrettyExpr<T> {
             Atom(_) | Stat(_) => VecDeque::new(),
             Quote(x) => {
                 let mut path = x.path_to_last_element();
-                path.push_front(1);
+                path.push_front(0);
                 path
             }
             Inline(xs) | Expand(xs) | SemiExpand(_, xs) => match xs.last() {
@@ -74,7 +74,8 @@ impl<T> PrettyExpr<T> {
         match (path, self) {
             (_, Style(_, x)) => x.get(path),
             ([], x) => Some(x),
-            (_, Quote(x)) => x.get(&path[1..]),
+            ([0, rest @ ..], Quote(x)) => x.get(rest),
+            (_, Quote(x)) => None,
             ([p, rest @ ..], Inline(xs) | Expand(xs) | SemiExpand(_, xs)) => {
                 xs.get(*p).and_then(|x| x.get(rest))
             }
@@ -87,7 +88,8 @@ impl<T> PrettyExpr<T> {
         match (path, self) {
             (_, Style(_, x)) => x.get_mut(path),
             ([], x) => Some(x),
-            (_, Quote(x)) => x.get_mut(&path[1..]),
+            ([0, rest @ ..], Quote(x)) => x.get_mut(rest),
+            (_, Quote(x)) => None,
             ([p, rest @ ..], Inline(xs) | Expand(xs) | SemiExpand(_, xs)) => {
                 xs.get_mut(*p).and_then(|x| x.get_mut(rest))
             }
