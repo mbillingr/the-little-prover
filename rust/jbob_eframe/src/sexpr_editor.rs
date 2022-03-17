@@ -54,7 +54,6 @@ impl egui::Widget for &mut SexprEditor {
                     }
                     _ => println!("{:?}", event),
                 }
-                println!("{:?}", self.editor.cursor());
             }
 
             // abuse expr styling for highlighting the cursor position
@@ -63,13 +62,19 @@ impl egui::Widget for &mut SexprEditor {
                 .unwrap();
         }
 
-        build_sexpr_ui(
+        let rect = build_sexpr_ui(
             ui,
             expr,
             egui::FontId::monospace(14.0),
             ui.max_rect().width(),
         );
 
-        ui.interact(ui.min_rect(), ui.id(), Sense::click())
+        let response = ui.interact(rect, ui.id(), Sense::click());
+
+        if response.clicked() {
+            ui.memory().request_focus(ui.id());
+        }
+
+        response
     }
 }

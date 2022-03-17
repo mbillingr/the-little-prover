@@ -94,7 +94,12 @@ impl From<LayoutJobFormatter> for egui::text::LayoutJob {
     }
 }
 
-pub fn build_sexpr_ui(ui: &mut egui::Ui, expr: Sexpr, font: egui::FontId, wrap_width: f32) {
+pub fn build_sexpr_ui(
+    ui: &mut egui::Ui,
+    expr: Sexpr,
+    font: egui::FontId,
+    wrap_width: f32,
+) -> egui::Rect {
     let char_width = ui.fonts().glyph_width(&font, '_');
     // assuming all chars in a monospace font have the same width
     let max_row_len = (wrap_width / char_width).floor().max(1.0) as usize - 1;
@@ -106,6 +111,7 @@ pub fn build_sexpr_ui(ui: &mut egui::Ui, expr: Sexpr, font: egui::FontId, wrap_w
     let mut f = UiFormatter::new(ui);
     pe.write(&mut f).unwrap();
     f.write_newline().unwrap();
+    f.rect
 }
 
 struct UiFormatter<'a> {
@@ -114,6 +120,7 @@ struct UiFormatter<'a> {
     current_line: LineWriter,
     current_style: egui::TextFormat,
     saved_styles: Vec<egui::TextFormat>,
+    rect: egui::Rect,
 }
 
 impl<'a> UiFormatter<'a> {
@@ -124,6 +131,7 @@ impl<'a> UiFormatter<'a> {
             current_line: LineWriter::new(),
             current_style: egui::TextFormat::default(),
             saved_styles: vec![],
+            rect: egui::Rect::NOTHING,
         }
     }
 
@@ -167,7 +175,8 @@ impl Formatter<Style> for UiFormatter<'_> {
         self.new_fragment();
 
         let line = std::mem::replace(&mut self.current_line, LineWriter::new());
-        line.write(self.ui);
+        let r = line.write(self.ui);
+        self.rect = self.rect.union(r.rect);
         Ok(())
     }
 }
@@ -185,12 +194,13 @@ impl LineWriter {
         self.parts.push(text)
     }
 
-    fn write(self, ui: &mut egui::Ui) {
+    fn write(self, ui: &mut egui::Ui) -> egui::Response {
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 0.0;
             for text in self.parts {
                 ui.add(egui::Label::new(text));
             }
-        });
+        })
+        .response
     }
 }
