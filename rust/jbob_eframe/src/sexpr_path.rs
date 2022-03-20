@@ -3,44 +3,79 @@ use eframe::egui;
 use eframe::egui::{Event, Key, Sense};
 use jbob_app::{Sexpr, Style};
 
-pub struct SexprEditor {
+pub struct SexprPathSelector {
     id: usize,
     editor: jbob_app::sexpr_editor::SexprEditor,
+    path_expr: Sexpr,
 }
 
-impl SexprEditor {
+impl SexprPathSelector {
     pub fn new(id: usize, expr: impl Into<Sexpr>) -> Self {
-        SexprEditor {
+        SexprPathSelector {
             id,
             editor: jbob_app::sexpr_editor::SexprEditor::new(expr.into()),
+            path_expr: Sexpr::list(vec![]),
         }
+    }
+
+    pub fn set_expr(&mut self, expr: impl Into<Sexpr>) {
+        self.editor.set_expr(expr.into());
     }
 
     pub fn expr(&self) -> &Sexpr {
         self.editor.expr()
     }
+
+    pub fn path_expr(&self) -> &Sexpr {
+        &self.path_expr
+    }
+
+    fn update_path_expr(&mut self) {
+        let mut expr = self.editor.expr();
+        let mut path = vec![];
+        for &p in self.editor.cursor() {
+            if expr.get(&[0]).and_then(|x| x.get_text()) == Some("if") {
+                let s = match p {
+                    1 => "Q",
+                    2 => "A",
+                    3 => "E",
+                    _ => "?",
+                };
+                path.push(Sexpr::Stat(s))
+            } else {
+                path.push(Sexpr::Atom(format!("{}", p)));
+            }
+            expr = expr.get(&[p]).unwrap();
+        }
+
+        self.path_expr = Sexpr::list(path);
+    }
 }
 
-impl egui::Widget for &mut SexprEditor {
+impl egui::Widget for &mut SexprPathSelector {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let id = ui.id().with(self.id);
         let mut changed = false;
-        let expr = if ui.memory().has_focus(id) {
+
+        if ui.memory().has_focus(id) {
             let input = ui.input_mut();
 
             for event in &input.events {
                 changed |= self.editor.handle_event(&adapt_event(event));
             }
+        }
 
-            // abuse expr styling for highlighting the cursor position
-            self.editor
-                .expr()
-                .clone()
-                .with_style(self.editor.cursor(), Style::Highlight)
-                .unwrap()
-        } else {
-            self.editor.expr().clone()
-        };
+        if changed {
+            self.update_path_expr();
+        }
+
+        // abuse expr styling for highlighting the cursor position
+        let expr = self
+            .editor
+            .expr()
+            .clone()
+            .with_style(self.editor.cursor(), Style::Highlight)
+            .unwrap();
 
         let rect = build_sexpr_ui(
             ui,
@@ -48,6 +83,8 @@ impl egui::Widget for &mut SexprEditor {
             egui::FontId::monospace(14.0),
             ui.max_rect().width(),
         );
+
+        ui.label(format!("Path: {}", self.path_expr));
 
         let mut response = ui.interact(rect, id, Sense::click());
 
@@ -64,20 +101,8 @@ impl egui::Widget for &mut SexprEditor {
 }
 
 pub fn adapt_event(e: &egui::Event) -> jbob_app::Event {
-    use egui::Event as X;
     use jbob_app::Event as Y;
     match e {
-        X::Text(s) => Y::Edit(s.chars().next().unwrap()),
-        Event::Key {
-            key: Key::Backspace,
-            pressed: true,
-            ..
-        } => Y::EditBackspace,
-        Event::Key {
-            key: Key::Delete,
-            pressed: true,
-            ..
-        } => Y::EditDelete,
         Event::Key {
             key: Key::ArrowRight | Key::ArrowDown,
             pressed: true,
@@ -98,16 +123,6 @@ pub fn adapt_event(e: &egui::Event) -> jbob_app::Event {
             pressed: true,
             ..
         } => Y::NavPrev,
-        Event::Key {
-            key: Key::PageDown,
-            pressed: true,
-            ..
-        } => Y::EditWrap,
-        Event::Key {
-            key: Key::PageUp,
-            pressed: true,
-            ..
-        } => Y::EditUnwrap,
         _ => Y::Unknown,
     }
 }

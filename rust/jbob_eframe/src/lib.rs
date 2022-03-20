@@ -6,6 +6,7 @@ mod app;
 mod jbob_proof;
 mod sexpr_editor;
 mod sexpr_layout;
+mod sexpr_path;
 mod sexpr_view;
 
 pub use app::TemplateApp;

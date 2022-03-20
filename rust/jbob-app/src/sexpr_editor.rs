@@ -20,6 +20,13 @@ impl SexprEditor {
         &self.expr
     }
 
+    pub fn set_expr(&mut self, expr: PrettyExpr<Style>) {
+        self.expr = expr;
+        if !self.expr.is_valid_path(self.cursor()) {
+            self.cursor = vec![];
+        }
+    }
+
     pub fn cursor(&self) -> &[usize] {
         &self.cursor
     }

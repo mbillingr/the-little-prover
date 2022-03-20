@@ -119,7 +119,7 @@ impl<T> PrettyExpr<T> {
     pub fn is_atom(&self) -> bool {
         match self {
             PrettyExpr::Atom(_) | PrettyExpr::Stat(_) => true,
-            PrettyExpr::Quote(_) => false,
+            PrettyExpr::Quote(_) => true,
             PrettyExpr::Inline(_) | PrettyExpr::Expand(_) | PrettyExpr::SemiExpand(_, _) => false,
             PrettyExpr::Style(_, x) => x.is_atom(),
         }

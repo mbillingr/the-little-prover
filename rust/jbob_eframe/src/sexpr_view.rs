@@ -18,14 +18,12 @@ impl SexprView {
 
 impl egui::Widget for &mut SexprView {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        egui::ScrollArea::vertical().show(ui, |ui| {
-            build_sexpr_ui(
-                ui,
-                self.expr.clone(),
-                egui::FontId::monospace(14.0),
-                ui.max_rect().width(),
-            );
-        });
+        build_sexpr_ui(
+            ui,
+            self.expr.clone(),
+            egui::FontId::monospace(14.0),
+            ui.max_rect().width(),
+        );
 
         // todo: how can we return a Response without creating another widget?
         ui.label("")

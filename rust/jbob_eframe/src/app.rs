@@ -74,12 +74,15 @@ impl<'a> epi::App for TemplateApp<'a> {
                         frame.quit();
                     }
                 });
+                egui::warn_if_debug_build(ui);
             });
         });
 
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.heading("Definitions");
-            ui.add(&mut self.sexpr_view);
+            egui::ScrollArea::vertical().show(ui, |ui| {
+                ui.add(&mut self.sexpr_view);
+            });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 ui.horizontal(|ui| {
@@ -94,15 +97,7 @@ impl<'a> epi::App for TemplateApp<'a> {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
-
-            ui.heading("eframe template");
-            ui.hyperlink("https://github.com/emilk/eframe_template");
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/master/",
-                "Source code."
-            ));
-            egui::warn_if_debug_build(ui);
-
+            ui.heading("Proof");
             ui.add(&mut self.proof)
         });
 
