@@ -1,7 +1,7 @@
 use crate::sexpr_layout::{build_sexpr_ui, SexprLayout};
 use eframe::egui;
 use eframe::egui::{Event, Key, Modifiers, Sense};
-use jbob_app::{PrettyExpr, Style};
+use jbob_app::{Style, Sexpr};
 
 pub struct SexprEditor {
     editor: jbob_app::sexpr_editor::SexprEditor,
@@ -11,20 +11,25 @@ pub struct SexprEditor {
 impl SexprEditor {
     pub fn new() -> Self {
         SexprEditor {
-            editor: jbob_app::sexpr_editor::SexprEditor::new(PrettyExpr::list(vec![
-                PrettyExpr::Stat("defun"),
-                PrettyExpr::quote(PrettyExpr::Stat("WORLD")),
-                PrettyExpr::Stat("HELLO"),
-                PrettyExpr::quote(PrettyExpr::Stat("WORLD")),
+            editor: jbob_app::sexpr_editor::SexprEditor::new(Sexpr::list(vec![
+                Sexpr::Stat("defun"),
+                Sexpr::quote(Sexpr::Stat("WORLD")),
+                Sexpr::Stat("HELLO"),
+                Sexpr::quote(Sexpr::Stat("WORLD")),
             ])),
             //editor: jbob_app::sexpr_editor::SexprEditor::new(PrettyExpr::Stat("HELLO")),
             layout: SexprLayout::new(),
         }
     }
+
+    pub fn expr(&self) -> &Sexpr {
+        self.editor.expr()
+    }
 }
 
 impl egui::Widget for &mut SexprEditor {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let mut changed = false;
         let expr = if ui.memory().has_focus(ui.id()) {
             let mut input = ui.input_mut();
 
@@ -33,7 +38,7 @@ impl egui::Widget for &mut SexprEditor {
             }
 
             for event in &input.events {
-                self.editor.handle_event(&adapt_event(event));
+                changed |= self.editor.handle_event(&adapt_event(event));
             }
 
             // abuse expr styling for highlighting the cursor position
@@ -53,10 +58,14 @@ impl egui::Widget for &mut SexprEditor {
             ui.max_rect().width(),
         );
 
-        let response = ui.interact(rect, ui.id(), Sense::click());
+        let mut response = ui.interact(rect, ui.id(), Sense::click());
 
         if response.clicked() {
             ui.memory().request_focus(ui.id());
+        }
+
+        if changed {
+            response.mark_changed();
         }
 
         response
@@ -81,16 +90,6 @@ pub fn adapt_event(e: &egui::Event) -> jbob_app::Event {
         Event::Key {
             key: Key::ArrowRight | Key::ArrowDown,
             pressed: true,
-            ..
-        } => Y::NavNext,
-        Event::Key {
-            key: Key::ArrowLeft | Key::ArrowUp,
-            pressed: true,
-            ..
-        } => Y::NavPrev,
-        Event::Key {
-            key: Key::ArrowRight | Key::ArrowDown,
-            pressed: true,
             modifiers: egui::Modifiers { ctrl: true, .. },
         } => Y::NavNextFast,
         Event::Key {
@@ -98,6 +97,16 @@ pub fn adapt_event(e: &egui::Event) -> jbob_app::Event {
             pressed: true,
             modifiers: egui::Modifiers { ctrl: true, .. },
         } => Y::NavPrevFast,
+        Event::Key {
+            key: Key::ArrowRight | Key::ArrowDown,
+            pressed: true,
+            ..
+        } => Y::NavNext,
+        Event::Key {
+            key: Key::ArrowLeft | Key::ArrowUp,
+            pressed: true,
+            ..
+        } => Y::NavPrev,
         Event::Key {
             key: Key::PageDown,
             pressed: true,

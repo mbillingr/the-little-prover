@@ -1,12 +1,15 @@
-use jbob::jbob_runtime::S;
+use jbob::j_bob::j_bob_slash_prove;
+use jbob::jbob_runtime::{Context, S};
+use crate::PrettyExpr;
+use crate::sexpr_adapter::pretty_to_s;
 
-struct Proof<T> {
-    statement: T,
-    seed: T,
-    steps: Vec<ProofStep<T>>,
-}
 
-struct ProofStep<T> {
-    path: T,
-    rewrite: T,
+pub fn proof<T>(defs: &PrettyExpr<T>, pfs: &PrettyExpr<T>) -> PrettyExpr<T> {
+    let ctx = &mut Context::new();
+    let defs = pretty_to_s(ctx, defs);
+    let pfs = pretty_to_s(ctx, pfs);
+
+    let result = j_bob_slash_prove(ctx, defs, pfs);
+
+    result.into()
 }
