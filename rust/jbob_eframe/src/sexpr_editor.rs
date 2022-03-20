@@ -25,42 +25,26 @@ impl SexprEditor {
 
 impl egui::Widget for &mut SexprEditor {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let mut expr = self.editor.expr().clone();
-
-        if ui.memory().has_focus(ui.id()) {
+        let expr = if ui.memory().has_focus(ui.id()) {
             let mut input = ui.input_mut();
 
+            if !input.events.is_empty() {
+                self.layout.clear();
+            }
+
             for event in &input.events {
-                match event {
-                    Event::Key {
-                        key: Key::ArrowRight,
-                        pressed: true,
-                        ..
-                    } => {
-                        self.editor.move_cursor_next();
-                        self.layout.clear();
-                    }
-                    Event::Key {
-                        key: Key::ArrowLeft,
-                        pressed: true,
-                        ..
-                    } => {
-                        self.editor.move_cursor_prev();
-                        self.layout.clear();
-                    }
-                    Event::Text(s) => {
-                        self.editor.append_at_cursor(s);
-                        self.layout.clear();
-                    }
-                    _ => println!("{:?}", event),
-                }
+                self.editor.handle_event(&adapt_event(event));
             }
 
             // abuse expr styling for highlighting the cursor position
-            expr = expr
+            self.editor
+                .expr()
+                .clone()
                 .with_style(self.editor.cursor(), Style::Highlight)
-                .unwrap();
-        }
+                .unwrap()
+        } else {
+            self.editor.expr().clone()
+        };
 
         let rect = build_sexpr_ui(
             ui,
@@ -76,5 +60,54 @@ impl egui::Widget for &mut SexprEditor {
         }
 
         response
+    }
+}
+
+pub fn adapt_event(e: &egui::Event) -> jbob_app::Event {
+    use egui::Event as X;
+    use jbob_app::Event as Y;
+    match e {
+        X::Text(s) => Y::Edit(s.chars().next().unwrap()),
+        Event::Key {
+            key: Key::Backspace,
+            pressed: true,
+            ..
+        } => Y::EditBackspace,
+        Event::Key {
+            key: Key::Delete,
+            pressed: true,
+            ..
+        } => Y::EditDelete,
+        Event::Key {
+            key: Key::ArrowRight | Key::ArrowDown,
+            pressed: true,
+            ..
+        } => Y::NavNext,
+        Event::Key {
+            key: Key::ArrowLeft | Key::ArrowUp,
+            pressed: true,
+            ..
+        } => Y::NavPrev,
+        Event::Key {
+            key: Key::ArrowRight | Key::ArrowDown,
+            pressed: true,
+            modifiers: egui::Modifiers { ctrl: true, .. },
+        } => Y::NavNextFast,
+        Event::Key {
+            key: Key::ArrowLeft | Key::ArrowUp,
+            pressed: true,
+            modifiers: egui::Modifiers { ctrl: true, .. },
+        } => Y::NavPrevFast,
+        Event::Key {
+            key: Key::PageDown,
+            pressed: true,
+            ..
+        } => Y::EditWrap,
+        Event::Key {
+            key: Key::PageUp,
+            pressed: true,
+            ..
+        } => Y::EditUnwrap,
+        _ => Y::Unknown,
     }
 }

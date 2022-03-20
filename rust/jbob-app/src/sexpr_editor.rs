@@ -1,5 +1,6 @@
 use crate::styles::Style;
 use crate::sxfmt::PrettyExpr;
+use crate::Event;
 
 #[derive(Clone)]
 pub struct SexprEditor {
@@ -175,5 +176,32 @@ impl SexprEditor {
         } else if let Some(y) = x.quoted_value() {
             *x = y.clone();
         }
+    }
+
+    pub fn handle_event(&mut self, event: &Event) -> bool {
+        use Event::*;
+        match event {
+            NavNext => self.move_cursor_next(),
+            NavPrev => self.move_cursor_prev(),
+            NavNextFast => self.advance_cursor(),
+            NavPrevFast => self.unadvance_cursor(),
+            EditWrap => self.wrap_cursor_in_list(),
+            EditUnwrap => self.unwrap_unary_list_at_cursor(),
+            EditDelete => self.delete_cursor_element(),
+            Edit('\'') => {
+                self.quote_cursor();
+                self.move_cursor_into_list();
+            }
+            Edit('(') => {
+                self.wrap_cursor_in_list();
+                self.move_cursor_into_list();
+            }
+            Edit(')') => self.move_cursor_out_of_list(),
+            Edit(' ') => self.insert_element_after_cursor(),
+            Edit(ch) => self.append_at_cursor(&ch.to_string()),
+            EditBackspace => self.delete_at_cursor(),
+            _ => return false,
+        }
+        true
     }
 }
