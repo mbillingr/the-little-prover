@@ -1,11 +1,10 @@
-use crate::sexpr_layout::{build_sexpr_ui, SexprLayout};
+use crate::sexpr_layout::build_sexpr_ui;
 use eframe::egui;
-use eframe::egui::{Event, Key, Modifiers, Sense};
-use jbob_app::{Style, Sexpr};
+use eframe::egui::{Event, Key, Sense};
+use jbob_app::{Sexpr, Style};
 
 pub struct SexprEditor {
     editor: jbob_app::sexpr_editor::SexprEditor,
-    layout: SexprLayout,
 }
 
 impl SexprEditor {
@@ -18,7 +17,6 @@ impl SexprEditor {
                 Sexpr::quote(Sexpr::Stat("WORLD")),
             ])),
             //editor: jbob_app::sexpr_editor::SexprEditor::new(PrettyExpr::Stat("HELLO")),
-            layout: SexprLayout::new(),
         }
     }
 
@@ -31,11 +29,7 @@ impl egui::Widget for &mut SexprEditor {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let mut changed = false;
         let expr = if ui.memory().has_focus(ui.id()) {
-            let mut input = ui.input_mut();
-
-            if !input.events.is_empty() {
-                self.layout.clear();
-            }
+            let input = ui.input_mut();
 
             for event in &input.events {
                 changed |= self.editor.handle_event(&adapt_event(event));

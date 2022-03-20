@@ -33,7 +33,7 @@ impl Widget for SexprView {
 
         let mut first_row = 0;
 
-        if let Some((h0, h1)) = cf.highlight_row_range {
+        if let Some((h0, _)) = cf.highlight_row_range {
             let h3 = height / 3;
             if h0 > h3 {
                 first_row = h0 - h3;

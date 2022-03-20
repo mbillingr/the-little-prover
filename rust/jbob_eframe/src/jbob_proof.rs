@@ -1,8 +1,7 @@
-use crate::sexpr_layout::{build_sexpr_ui, SexprLayout};
-use eframe::egui;
-use jbob_app::{proof, Sexpr};
 use crate::sexpr_editor::SexprEditor;
 use crate::sexpr_view::SexprView;
+use eframe::egui;
+use jbob_app::{proof, Sexpr};
 
 pub struct JbobProof {
     defs: Sexpr,
@@ -26,7 +25,8 @@ impl egui::Widget for &mut JbobProof {
             let r = ui.add(&mut self.pfs_edit);
 
             if r.changed() {
-                self.result.set_expr(proof(&self.defs, self.pfs_edit.expr()));
+                self.result
+                    .set_expr(proof(&self.defs, self.pfs_edit.expr()));
             }
 
             ui.add(&mut self.result);

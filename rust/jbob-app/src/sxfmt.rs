@@ -75,7 +75,7 @@ impl<T> PrettyExpr<T> {
             (_, Style(_, x)) => x.get(path),
             ([], x) => Some(x),
             ([0, rest @ ..], Quote(x)) => x.get(rest),
-            (_, Quote(x)) => None,
+            (_, Quote(_)) => None,
             ([p, rest @ ..], Inline(xs) | Expand(xs) | SemiExpand(_, xs)) => {
                 xs.get(*p).and_then(|x| x.get(rest))
             }
@@ -89,7 +89,7 @@ impl<T> PrettyExpr<T> {
             (_, Style(_, x)) => x.get_mut(path),
             ([], x) => Some(x),
             ([0, rest @ ..], Quote(x)) => x.get_mut(rest),
-            (_, Quote(x)) => None,
+            (_, Quote(_)) => None,
             ([p, rest @ ..], Inline(xs) | Expand(xs) | SemiExpand(_, xs)) => {
                 xs.get_mut(*p).and_then(|x| x.get_mut(rest))
             }

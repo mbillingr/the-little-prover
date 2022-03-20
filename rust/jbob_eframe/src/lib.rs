@@ -3,10 +3,10 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
 mod app;
+mod jbob_proof;
 mod sexpr_editor;
 mod sexpr_layout;
 mod sexpr_view;
-mod jbob_proof;
 
 pub use app::TemplateApp;
 
