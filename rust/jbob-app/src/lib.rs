@@ -8,7 +8,7 @@ mod textbuffer;
 pub mod widgets;
 
 pub use events::Event;
-pub use proof::proof;
+pub use proof::{define, proof};
 pub use styles::Style;
 pub use sxfmt::{Formatter, PrettyExpr, PrettyFormatter};
 pub use textbuffer::{RenderTarget, TextBuffer};

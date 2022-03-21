@@ -2,7 +2,7 @@ use crate::sexpr_editor::SexprEditor;
 use crate::sexpr_path::SexprPathSelector;
 use crate::sexpr_view::SexprView;
 use eframe::egui;
-use jbob_app::{proof, Sexpr};
+use jbob_app::{define, proof, Sexpr};
 
 const ID_OFFSET: usize = 10;
 
@@ -16,6 +16,7 @@ pub struct JbobProof {
     statement: SexprEditor,
     seed: SexprEditor,
     steps: Vec<ProofStep>,
+    resulting_defs: Option<Sexpr>,
 }
 
 impl JbobProof {
@@ -25,7 +26,12 @@ impl JbobProof {
             statement: SexprEditor::new(1, Sexpr::empty_list()),
             seed: SexprEditor::new(2, Sexpr::Stat("nil")),
             steps: vec![],
+            resulting_defs: None,
         }
+    }
+
+    pub fn take_resulting_defs(&mut self) -> Option<Sexpr> {
+        self.resulting_defs.take()
     }
 }
 
@@ -77,7 +83,15 @@ impl egui::Widget for &mut JbobProof {
             }
 
             if success {
-                ui.button("(TODO) define this");
+                if ui.button("define this").clicked() {
+                    let result = define(
+                        &self.defs,
+                        self.statement.expr(),
+                        self.seed.expr(),
+                        &proof_steps,
+                    );
+                    self.resulting_defs = Some(result);
+                }
             }
         });
 

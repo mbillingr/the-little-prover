@@ -80,9 +80,11 @@ impl<'a> epi::App for TemplateApp<'a> {
 
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.heading("Definitions");
-            egui::ScrollArea::vertical().show(ui, |ui| {
-                ui.add(&mut self.sexpr_view);
-            });
+            egui::ScrollArea::vertical()
+                .stick_to_bottom()
+                .show(ui, |ui| {
+                    ui.add(&mut self.sexpr_view);
+                });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 ui.horizontal(|ui| {
@@ -100,6 +102,11 @@ impl<'a> epi::App for TemplateApp<'a> {
             ui.heading("Proof");
             ui.add(&mut self.proof)
         });
+
+        if let Some(defs) = self.proof.take_resulting_defs() {
+            self.proof = JbobProof::new(defs.clone());
+            self.sexpr_view.set_expr(defs);
+        }
 
         if false {
             egui::Window::new("Window").show(ctx, |ui| {
