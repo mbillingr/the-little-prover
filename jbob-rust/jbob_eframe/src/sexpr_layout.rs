@@ -8,6 +8,7 @@ pub fn build_sexpr_ui(
     wrap_width: f32,
 ) -> egui::Rect {
     ui.vertical(|ui| {
+        ui.set_width(wrap_width);
         let char_width = ui.fonts().glyph_width(&font, '_');
         // assuming all chars in a monospace font have the same width
         let max_row_len = (wrap_width / char_width).floor().max(1.0) as usize - 1;
