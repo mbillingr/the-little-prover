@@ -68,7 +68,13 @@ impl Formatter<Style> for UiFormatter<'_> {
             Style::Quote => self.current_style.color = egui::Color32::BLUE,
             Style::True => self.current_style.color = egui::Color32::from_rgb(0, 0xb7, 0),
             Style::False => self.current_style.color = egui::Color32::RED,
-            Style::Keyword => self.current_style.color = egui::Color32::BLACK,
+            Style::Keyword => {
+                self.current_style.color = if self.ui.style().visuals.dark_mode {
+                    egui::Color32::WHITE
+                } else {
+                    egui::Color32::BLACK
+                }
+            }
             Style::Highlight => self.current_style.background = egui::Color32::LIGHT_BLUE,
             _ => self.current_style = egui::TextFormat::default(),
         }
