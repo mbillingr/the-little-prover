@@ -43,7 +43,7 @@ SET CRATE_NAME_SNAKE_CASE=%FOLDER_NAME:-=_%
 SET RUSTFLAGS=--cfg=web_sys_unstable_apis
 
 @REM Clear output from old stuff:
-DEL /F docs\%CRATE_NAME_SNAKE_CASE%_bg.wasm
+DEL /F ..\docs\%CRATE_NAME_SNAKE_CASE%_bg.wasm
 
 echo Building rust...
 SET BUILD=release
@@ -54,16 +54,16 @@ FOR /F %%i IN ('cargo metadata --format-version=1 ^| jq --raw-output .target_dir
 
 echo Generating JS bindings for wasm...
 SET TARGET_NAME=%CRATE_NAME_SNAKE_CASE%.wasm
-wasm-bindgen "%TARGET%\wasm32-unknown-unknown\%BUILD%\%TARGET_NAME%" --out-dir "docs" --no-modules --no-typescript
+wasm-bindgen "%TARGET%\wasm32-unknown-unknown\%BUILD%\%TARGET_NAME%" --out-dir "../docs" --no-modules --no-typescript
 
 IF %FAST% == 0 (
   echo Optimizing wasm...
   @REM to get wasm-opt:  apt/brew/dnf install binaryen
   @REM add -g to get debug symbols :
-  wasm-opt "docs\%CRATE_NAME%_bg.wasm" -O2 --fast-math -o "docs\%CRATE_NAME%_bg.wasm"
+  wasm-opt "..\docs\%CRATE_NAME%_bg.wasm" -O2 --fast-math -o "..\docs\%CRATE_NAME%_bg.wasm"
 )
 
-echo Finished: docs/%CRATE_NAME_SNAKE_CASE%.wasm"
+echo Finished: ../docs/%CRATE_NAME_SNAKE_CASE%.wasm"
 
 IF %OPEN% == 1 start http://localhost:8080/index.html
 
