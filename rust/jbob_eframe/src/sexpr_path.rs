@@ -26,6 +26,10 @@ impl SexprPathSelector {
         self.editor.expr()
     }
 
+    pub fn selection(&self) -> &Sexpr {
+        self.editor.selection()
+    }
+
     pub fn path_expr(&self) -> &Sexpr {
         &self.path_expr
     }
@@ -54,49 +58,51 @@ impl SexprPathSelector {
 
 impl egui::Widget for &mut SexprPathSelector {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let id = ui.id().with(self.id);
-        let mut changed = false;
+        ui.vertical(|ui| {
+            let id = ui.id().with(self.id);
+            let mut changed = false;
 
-        if ui.memory().has_focus(id) {
-            let input = ui.input_mut();
+            if ui.memory().has_focus(id) {
+                let input = ui.input_mut();
 
-            for event in &input.events {
-                changed |= self.editor.handle_event(&adapt_event(event));
+                for event in &input.events {
+                    changed |= self.editor.handle_event(&adapt_event(event));
+                }
             }
-        }
 
-        if changed {
-            self.update_path_expr();
-        }
+            if changed {
+                self.update_path_expr();
+            }
 
-        // abuse expr styling for highlighting the cursor position
-        let expr = self
-            .editor
-            .expr()
-            .clone()
-            .with_style(self.editor.cursor(), Style::Highlight)
-            .unwrap();
+            // abuse expr styling for highlighting the cursor position
+            let expr = self
+                .editor
+                .expr()
+                .clone()
+                .with_style(self.editor.cursor(), Style::Highlight)
+                .unwrap();
 
-        let rect = build_sexpr_ui(
-            ui,
-            expr,
-            egui::FontId::monospace(14.0),
-            ui.max_rect().width(),
-        );
+            let rect = build_sexpr_ui(
+                ui,
+                expr,
+                egui::FontId::monospace(14.0),
+                ui.max_rect().width(),
+            );
 
-        ui.label(format!("Path: {}", self.path_expr));
+            ui.label(format!("Path: {}", self.path_expr));
 
-        let mut response = ui.interact(rect, id, Sense::click());
+            let mut response = ui.interact(rect, id, Sense::click());
 
-        if response.clicked() {
-            ui.memory().request_focus(id);
-        }
+            if response.clicked() {
+                ui.memory().request_focus(id);
+            }
 
-        if changed {
-            response.mark_changed();
-        }
+            if changed {
+                response.mark_changed();
+            }
 
-        response
+            response
+        }).inner
     }
 }
 

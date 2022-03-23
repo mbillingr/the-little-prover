@@ -31,6 +31,10 @@ impl SexprEditor {
         &self.cursor
     }
 
+    pub fn selection(&self) -> &PrettyExpr<Style> {
+        self.expr().get(self.cursor()).unwrap()
+    }
+
     fn try_push_cursor(&mut self) -> bool {
         self.cursor.push(0);
         if self.expr.is_valid_path(&self.cursor) {

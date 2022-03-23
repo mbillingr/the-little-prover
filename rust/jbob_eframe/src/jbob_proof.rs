@@ -38,8 +38,14 @@ impl JbobProof {
 impl egui::Widget for &mut JbobProof {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         egui::ScrollArea::vertical().show(ui, |ui| {
-            let mut changed = ui.add(&mut self.statement).changed();
-            changed |= ui.add(&mut self.seed).changed();
+            let mut changed = ui.horizontal(|ui| {
+                ui.label("Claim: ");
+                ui.add(&mut self.statement).changed()
+            }).inner;
+            changed |= ui.horizontal(|ui| {
+                ui.label("Seed: ");
+                ui.add(&mut self.seed).changed()
+            }).inner;
 
             let mut extendable = true;
             let mut success = false;
@@ -61,7 +67,13 @@ impl egui::Widget for &mut JbobProof {
                     success = q.get_text() == Some("t");
                     break;
                 } else {
-                    changed |= ui.add(&mut step.partial_result).changed();
+                    ui.horizontal(|ui| {
+                        changed |= ui.add(&mut step.partial_result).changed();
+                        if ui.button("copy").clicked() {
+                            step.rewrite.set_expr(step.partial_result.selection().clone());
+                            changed = true;
+                        }
+                    });
                     changed |= ui.add(&mut step.rewrite).changed();
                 }
                 let path = step.partial_result.path_expr();

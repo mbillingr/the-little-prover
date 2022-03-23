@@ -19,6 +19,10 @@ impl SexprEditor {
     pub fn expr(&self) -> &Sexpr {
         self.editor.expr()
     }
+
+    pub fn set_expr(&mut self, expr: impl Into<Sexpr>) {
+        self.editor.set_expr(expr.into())
+    }
 }
 
 impl egui::Widget for &mut SexprEditor {
