@@ -73,14 +73,12 @@ impl egui::Widget for &mut JbobProof {
                         success = q.get_text() == Some("t");
                         break;
                     } else {
-                        ui.horizontal(|ui| {
-                            changed |= ui.add(&mut step.partial_result).changed();
-                            if ui.button("copy").clicked() {
-                                step.rewrite
-                                    .set_expr(step.partial_result.selection().clone());
-                                changed = true;
-                            }
-                        });
+                        changed |= ui.add(&mut step.partial_result).changed();
+                        if ui.button("copy").clicked() {
+                            step.rewrite
+                                .set_expr(step.partial_result.selection().clone());
+                            changed = true;
+                        }
                         changed |= ui.add(&mut step.rewrite).changed();
                     }
                     let path = step.partial_result.path_expr();
