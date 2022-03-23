@@ -301,8 +301,9 @@ impl PrettyFormatter {
         match pe {
             PrettyExpr::Atom(x) => PrettyExpr::Atom(x),
             PrettyExpr::Stat(x) => PrettyExpr::Stat(x),
-            PrettyExpr::Inline(_)
-                if current_indent + pe.inline_width().unwrap() <= self.max_code_width =>
+            PrettyExpr::Inline(ref xs)
+                if self.allow_inline(xs)
+                    && current_indent + pe.inline_width().unwrap() <= self.max_code_width =>
             {
                 pe
             }
@@ -327,6 +328,13 @@ impl PrettyFormatter {
         }
     }
 
+    pub fn allow_inline<T>(&self, xs: &[PrettyExpr<T>]) -> bool {
+        match xs.first().and_then(PrettyExpr::get_text) {
+            Some("defun") | Some("dethm") => false,
+            _ => true,
+        }
+    }
+
     pub fn try_semiexpand<T>(
         &self,
         xs: Vec<PrettyExpr<T>>,
@@ -343,6 +351,8 @@ impl PrettyFormatter {
             Some(s) if s.len() == 1 => 2,
             _ => 1,
         };
+
+        let n_inline = n_inline.min(xs.len());
 
         if PrettyExpr::partial_width(&xs[..n_inline])
             .map(|w| w + current_indent <= self.max_code_width)

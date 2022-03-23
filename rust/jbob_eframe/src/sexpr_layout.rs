@@ -7,18 +7,21 @@ pub fn build_sexpr_ui(
     font: egui::FontId,
     wrap_width: f32,
 ) -> egui::Rect {
-    let char_width = ui.fonts().glyph_width(&font, '_');
-    // assuming all chars in a monospace font have the same width
-    let max_row_len = (wrap_width / char_width).floor().max(1.0) as usize - 1;
+    ui.vertical(|ui| {
+        let char_width = ui.fonts().glyph_width(&font, '_');
+        // assuming all chars in a monospace font have the same width
+        let max_row_len = (wrap_width / char_width).floor().max(1.0) as usize - 1;
 
-    let mut pf = PrettyFormatter::default();
-    pf.max_code_width = max_row_len;
+        let mut pf = PrettyFormatter::default();
+        pf.max_code_width = max_row_len;
 
-    let pe = pf.pretty(expr.highlight());
-    let mut f = UiFormatter::new(ui);
-    pe.write(&mut f).unwrap();
-    f.write_newline().unwrap();
-    f.rect
+        let pe = pf.pretty(expr.highlight());
+        let mut f = UiFormatter::new(ui);
+        pe.write(&mut f).unwrap();
+        f.write_newline().unwrap();
+        f.rect
+    })
+    .inner
 }
 
 struct UiFormatter<'a> {

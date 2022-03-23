@@ -102,7 +102,8 @@ impl egui::Widget for &mut SexprPathSelector {
             }
 
             response
-        }).inner
+        })
+        .inner
     }
 }
 

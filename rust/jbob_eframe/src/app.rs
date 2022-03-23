@@ -5,7 +5,7 @@ use jbob::{
     j_bob,
     jbob_runtime::{self, Parser},
 };
-use jbob_app::{sexpr_adapter, Sexpr};
+use jbob_app::Sexpr;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
