@@ -65,8 +65,10 @@ impl Formatter<Style> for UiFormatter<'_> {
     fn set_style(&mut self, style: &Style) {
         self.new_fragment();
         match style {
-            Style::Quote => self.current_style.color = egui::Color32::RED,
-            Style::Keyword => self.current_style.color = egui::Color32::BLUE,
+            Style::Quote => self.current_style.color = egui::Color32::BLUE,
+            Style::True => self.current_style.color = egui::Color32::from_rgb(0, 0xb7, 0),
+            Style::False => self.current_style.color = egui::Color32::RED,
+            Style::Keyword => self.current_style.color = egui::Color32::BLACK,
             Style::Highlight => self.current_style.background = egui::Color32::LIGHT_BLUE,
             _ => self.current_style = egui::TextFormat::default(),
         }
