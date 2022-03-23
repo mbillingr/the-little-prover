@@ -1,7 +1,7 @@
 use crate::jbob_proof::JbobProof;
 use crate::sexpr_view::SexprView;
 use eframe::{egui, epi};
-use jbob::{
+use jbob_rs::{
     j_bob,
     jbob_runtime::{self, Parser},
 };
@@ -12,14 +12,13 @@ use jbob_app::Sexpr;
 #[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
 pub struct TemplateApp<'a> {
     jbob_context: jbob_runtime::Context<'a>,
-    //jbob_defs: jbob_runtime::S<'a>,
-    #[cfg_attr(feature = "persistence", serde(skip))]
+
+    // this how you opt-out of serialization of a member
+    //#[cfg_attr(feature = "persistence", serde(skip))]
     sexpr_view: SexprView,
 
     proof: JbobProof,
-    // this how you opt-out of serialization of a member
-    //#[cfg_attr(feature = "persistence", serde(skip))]
-    //value: f32,
+
     definitions: Sexpr,
     import_script: Option<String>,
 }
@@ -41,7 +40,7 @@ impl Default for TemplateApp<'_> {
 
 impl<'a> epi::App for TemplateApp<'a> {
     fn name(&self) -> &str {
-        "J/Bob GUI"
+        "J-Bob - The Little Proof Assistant"
     }
 
     /// Called once before the first frame.
@@ -110,7 +109,7 @@ impl<'a> epi::App for TemplateApp<'a> {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
-            ui.heading("Proof");
+            ui.heading("Current Proof");
             ui.add(&mut self.proof)
         });
 

@@ -16,5 +16,5 @@ if __name__ == "__main__":
 
     rust_source = header + rust_program
 
-    with open("rust/jbob/src/j_bob.rs", "w") as fd:
+    with open("../rust/jbob/src/j_bob.rs", "w") as fd:
         fd.write("\n".join(rust_source))

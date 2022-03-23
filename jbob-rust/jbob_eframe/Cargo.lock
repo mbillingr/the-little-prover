@@ -972,17 +972,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "jbob"
-version = "0.1.0"
-dependencies = [
- "sexpr_parser",
-]
-
-[[package]]
 name = "jbob-app"
 version = "0.1.0"
 dependencies = [
- "jbob",
+ "jbob-rs",
+]
+
+[[package]]
+name = "jbob-rs"
+version = "0.1.0"
+dependencies = [
+ "sexpr_parser",
 ]
 
 [[package]]
@@ -991,8 +991,8 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "eframe",
- "jbob",
  "jbob-app",
+ "jbob-rs",
  "serde",
  "tracing-wasm",
 ]

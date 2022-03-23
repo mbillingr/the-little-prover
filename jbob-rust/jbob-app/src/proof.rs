@@ -1,7 +1,7 @@
 use crate::sexpr_adapter::pretty_to_s;
 use crate::PrettyExpr;
-use jbob::j_bob::{j_bob_slash_define, j_bob_slash_prove};
-use jbob::jbob_runtime::{Context, S};
+use jbob_rs::j_bob::{j_bob_slash_define, j_bob_slash_prove};
+use jbob_rs::jbob_runtime::{Context, S};
 
 pub fn proof<T>(
     defs: &PrettyExpr<T>,

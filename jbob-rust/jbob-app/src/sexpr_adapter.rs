@@ -1,5 +1,5 @@
 use crate::PrettyExpr;
-use jbob::jbob_runtime::{Context, SexprFactory, S};
+use jbob_rs::jbob_runtime::{Context, SexprFactory, S};
 
 impl<T> From<S<'_>> for PrettyExpr<T> {
     fn from(expr: S) -> Self {
