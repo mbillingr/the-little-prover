@@ -1,5 +1,5 @@
 import pytest
-from jbob import evaluate, undefine
+from jbob import evaluate, undefine, JBOB_SOURCE_DIR
 from jbob_parser import parse
 from jbob_testing import evaluate_testsuite
 
@@ -10,7 +10,7 @@ def assert_same_value(expr1, expr2):
 
 @pytest.mark.parametrize("testsuite", ["test_recess.scm"])
 def test_jbob(testsuite):
-    with open(testsuite) as fd:
+    with open(JBOB_SOURCE_DIR / testsuite) as fd:
         ast = parse(fd.read())
     evaluate_testsuite({}, ast)
 
