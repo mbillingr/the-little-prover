@@ -1,4 +1,4 @@
-pub use sexpr_parser::SexprFactory;
+pub use sexpr_parser::{Parser, SexprFactory};
 use std::cell::RefCell;
 
 macro_rules! cons {

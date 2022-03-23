@@ -16,7 +16,7 @@ pub struct JbobProof {
     statement: SexprEditor,
     seed: SexprEditor,
     steps: Vec<ProofStep>,
-    resulting_defs: Option<Sexpr>,
+    resulting_defs: Option<(Sexpr, Sexpr)>,
 }
 
 impl JbobProof {
@@ -30,7 +30,7 @@ impl JbobProof {
         }
     }
 
-    pub fn take_resulting_defs(&mut self) -> Option<Sexpr> {
+    pub fn take_resulting_defs(&mut self) -> Option<(Sexpr, Sexpr)> {
         self.resulting_defs.take()
     }
 }

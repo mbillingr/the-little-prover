@@ -20,11 +20,12 @@ pub fn define<T>(
     statement: &PrettyExpr<T>,
     seed: &PrettyExpr<T>,
     steps: &[(PrettyExpr<T>, PrettyExpr<T>)],
-) -> PrettyExpr<T> {
+) -> (PrettyExpr<T>, PrettyExpr<T>) {
     let ctx = &mut Context::new();
     let (defs, pfs) = prepare_args(ctx, defs, statement, seed, steps);
+
     let result = j_bob_slash_define(ctx, defs, pfs);
-    result.into()
+    (result.into(), pfs.into())
 }
 
 fn prepare_args<'a, T>(

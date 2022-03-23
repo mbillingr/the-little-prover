@@ -97,6 +97,20 @@ impl<T> PrettyExpr<T> {
         }
     }
 
+    pub fn take(self, path: &[usize]) -> Option<Self> {
+        use PrettyExpr::*;
+        match (path, self) {
+            (_, Style(_, x)) => x.take(path),
+            ([], x) => Some(x),
+            ([0, rest @ ..], Quote(x)) => x.take(rest),
+            (_, Quote(_)) => None,
+            ([p, rest @ ..], Inline(xs) | Expand(xs) | SemiExpand(_, xs)) => {
+                xs.into_iter().skip(*p).next().and_then(|x| x.take(rest))
+            }
+            (_, Atom(_) | Stat(_)) => None,
+        }
+    }
+
     fn list_with_style(
         xs: Vec<Self>,
         p: usize,
@@ -227,6 +241,16 @@ impl<T> PrettyExpr<T> {
         }
         Some(w)
     }
+
+    pub fn append(&mut self, item: Self) {
+        match self {
+            PrettyExpr::Inline(xs) | PrettyExpr::Expand(xs) | PrettyExpr::SemiExpand(_, xs) => {
+                xs.push(item)
+            }
+            PrettyExpr::Style(_, x) => x.append(item),
+            _ => panic!("Can't append to atomic item"),
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -238,7 +262,7 @@ pub struct PrettyFormatter {
 impl Default for PrettyFormatter {
     fn default() -> Self {
         PrettyFormatter {
-            max_code_width: 15,
+            max_code_width: 40,
             default_indent: 2,
         }
     }

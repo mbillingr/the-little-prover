@@ -1,7 +1,11 @@
 use crate::jbob_proof::JbobProof;
 use crate::sexpr_view::SexprView;
 use eframe::{egui, epi};
-use jbob::{j_bob, jbob_runtime};
+use jbob::{
+    j_bob,
+    jbob_runtime::{self, Parser},
+};
+use jbob_app::{sexpr_adapter, Sexpr};
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
@@ -16,6 +20,8 @@ pub struct TemplateApp<'a> {
     // this how you opt-out of serialization of a member
     //#[cfg_attr(feature = "persistence", serde(skip))]
     //value: f32,
+    definitions: Sexpr,
+    import_script: Option<String>,
 }
 
 impl Default for TemplateApp<'_> {
@@ -27,6 +33,8 @@ impl Default for TemplateApp<'_> {
             //jbob_defs,
             sexpr_view: SexprView::new(jbob_defs),
             proof: JbobProof::new(jbob_defs),
+            definitions: Sexpr::empty_list(),
+            import_script: None,
         }
     }
 }
@@ -70,6 +78,9 @@ impl<'a> epi::App for TemplateApp<'a> {
             // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
+                    if ui.button("Import/Export").clicked() {
+                        self.import_script = Some(String::new());
+                    }
                     if ui.button("Quit").clicked() {
                         frame.quit();
                     }
@@ -103,9 +114,44 @@ impl<'a> epi::App for TemplateApp<'a> {
             ui.add(&mut self.proof)
         });
 
-        if let Some(defs) = self.proof.take_resulting_defs() {
+        if let Some((defs, definition)) = self.proof.take_resulting_defs() {
             self.proof = JbobProof::new(defs.clone());
             self.sexpr_view.set_expr(defs);
+            self.definitions.append(definition.take(&[0]).unwrap());
+        }
+
+        if let Some(script) = &mut self.import_script {
+            let mut should_close = false;
+            egui::Window::new("Window").show(ctx, |ui| {
+                ui.label("Copy/Paste a JBob script here...");
+                ui.label("The \"script\" is meant to be used in");
+                ui.label("(J-Bob/define (prelude) '______)");
+                ui.text_edit_multiline(script);
+                ui.horizontal(|ui| {
+                    if ui.button("Import").clicked() {
+                        let ctx = &mut jbob_runtime::Context::new();
+                        match ctx.parse(script) {
+                            Err(e) => {
+                                ui.label(e.to_string());
+                            }
+                            Ok(pfs) => {
+                                let defs = j_bob::j_bob_slash_define(ctx, j_bob::prelude(ctx), pfs);
+                                self.sexpr_view.set_expr(defs);
+                                self.definitions = pfs.into();
+                                self.proof = JbobProof::new(defs.clone());
+                                should_close = true;
+                            }
+                        }
+                    }
+
+                    if ui.button("Export").clicked() {
+                        *script = self.definitions.to_string();
+                    }
+                })
+            });
+            if should_close {
+                self.import_script = None;
+            }
         }
 
         if false {
