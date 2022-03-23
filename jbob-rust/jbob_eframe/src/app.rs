@@ -122,10 +122,12 @@ impl<'a> epi::App for TemplateApp<'a> {
         if let Some(script) = &mut self.import_script {
             let mut should_close = false;
             egui::Window::new("Window").show(ctx, |ui| {
+                ui.set_max_width(700.0);
+                ui.set_max_height(500.0);
                 ui.label("Copy/Paste a JBob script here...");
                 ui.label("The \"script\" is meant to be used in");
                 ui.label("(J-Bob/define (prelude) '______)");
-                ui.text_edit_multiline(script);
+                egui::ScrollArea::vertical().show(ui, |ui| ui.text_edit_multiline(script));
                 ui.horizontal(|ui| {
                     if ui.button("Import").clicked() {
                         let ctx = &mut jbob_runtime::Context::new();
@@ -151,15 +153,6 @@ impl<'a> epi::App for TemplateApp<'a> {
             if should_close {
                 self.import_script = None;
             }
-        }
-
-        if false {
-            egui::Window::new("Window").show(ctx, |ui| {
-                ui.label("Windows can be moved by dragging them.");
-                ui.label("They are automatically sized based on contents.");
-                ui.label("You can turn on resizing and scrolling if you like.");
-                ui.label("You would normally chose either panels OR windows.");
-            });
         }
     }
 }

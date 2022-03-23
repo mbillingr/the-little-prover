@@ -25,8 +25,12 @@ impl PrettyExpr<Style> {
                 Self::Style(Style::Keyword, Box::new(self))
             }
             PrettyExpr::Stat(s) if is_keyword(s) => Self::Style(Style::Keyword, Box::new(self)),
-            PrettyExpr::Quote(ref x) if x.get_text() == Some("t") => Self::Style(Style::True, Box::new(self)),
-            PrettyExpr::Quote(ref x) if x.get_text() == Some("nil") => Self::Style(Style::False, Box::new(self)),
+            PrettyExpr::Quote(ref x) if x.get_text() == Some("t") => {
+                Self::Style(Style::True, Box::new(self))
+            }
+            PrettyExpr::Quote(ref x) if x.get_text() == Some("nil") => {
+                Self::Style(Style::False, Box::new(self))
+            }
             PrettyExpr::Quote(_) => Self::Style(Style::Quote, Box::new(self)),
             PrettyExpr::Inline(xs) => PrettyExpr::Inline(highlight_vec(xs)),
             PrettyExpr::Expand(xs) => PrettyExpr::Expand(highlight_vec(xs)),
