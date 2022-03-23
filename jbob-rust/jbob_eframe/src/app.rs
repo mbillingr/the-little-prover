@@ -1,11 +1,11 @@
 use crate::jbob_proof::JbobProof;
 use crate::sexpr_view::SexprView;
 use eframe::{egui, epi};
+use jbob_glue::Sexpr;
 use jbob_rs::{
     j_bob,
     jbob_runtime::{self, Parser},
 };
-use jbob_glue::Sexpr;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
