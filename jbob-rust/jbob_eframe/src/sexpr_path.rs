@@ -1,11 +1,11 @@
 use crate::sexpr_layout::build_sexpr_ui;
 use eframe::egui;
 use eframe::egui::{Event, Key, Sense};
-use jbob_app::{Sexpr, Style};
+use jbob_glue::{Sexpr, Style};
 
 pub struct SexprPathSelector {
     id: usize,
-    editor: jbob_app::sexpr_editor::SexprEditor,
+    editor: jbob_glue::sexpr_editor::SexprEditor,
     path_expr: Sexpr,
 }
 
@@ -13,7 +13,7 @@ impl SexprPathSelector {
     pub fn new(id: usize, expr: impl Into<Sexpr>) -> Self {
         SexprPathSelector {
             id,
-            editor: jbob_app::sexpr_editor::SexprEditor::new(expr.into()),
+            editor: jbob_glue::sexpr_editor::SexprEditor::new(expr.into()),
             path_expr: Sexpr::list(vec![]),
         }
     }
@@ -107,8 +107,8 @@ impl egui::Widget for &mut SexprPathSelector {
     }
 }
 
-pub fn adapt_event(e: &egui::Event) -> jbob_app::Event {
-    use jbob_app::Event as Y;
+pub fn adapt_event(e: &egui::Event) -> jbob_glue::Event {
+    use jbob_glue::Event as Y;
     match e {
         Event::Key {
             key: Key::ArrowRight | Key::ArrowDown,

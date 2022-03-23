@@ -2,7 +2,7 @@ use crate::sexpr_editor::SexprEditor;
 use crate::sexpr_path::SexprPathSelector;
 use crate::sexpr_view::SexprView;
 use eframe::egui;
-use jbob_app::{define, proof, Sexpr};
+use jbob_glue::{define, proof, Sexpr};
 
 const ID_OFFSET: usize = 10;
 

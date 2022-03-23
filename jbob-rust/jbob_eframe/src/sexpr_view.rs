@@ -1,6 +1,6 @@
 use crate::sexpr_layout::build_sexpr_ui;
 use eframe::egui;
-use jbob_app::Sexpr;
+use jbob_glue::Sexpr;
 
 pub struct SexprView {
     expr: Sexpr,

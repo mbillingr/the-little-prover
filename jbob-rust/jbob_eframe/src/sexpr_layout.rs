@@ -1,5 +1,5 @@
 use eframe::egui;
-use jbob_app::{Formatter, PrettyFormatter, Sexpr, Style};
+use jbob_glue::{Formatter, PrettyFormatter, Sexpr, Style};
 
 pub fn build_sexpr_ui(
     ui: &mut egui::Ui,

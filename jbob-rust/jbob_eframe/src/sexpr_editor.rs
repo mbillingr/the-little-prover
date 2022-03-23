@@ -1,18 +1,18 @@
 use crate::sexpr_layout::build_sexpr_ui;
 use eframe::egui;
 use eframe::egui::{Event, Key, Sense};
-use jbob_app::{Sexpr, Style};
+use jbob_glue::{Sexpr, Style};
 
 pub struct SexprEditor {
     id: usize,
-    editor: jbob_app::sexpr_editor::SexprEditor,
+    editor: jbob_glue::sexpr_editor::SexprEditor,
 }
 
 impl SexprEditor {
     pub fn new(id: usize, expr: impl Into<Sexpr>) -> Self {
         SexprEditor {
             id,
-            editor: jbob_app::sexpr_editor::SexprEditor::new(expr.into()),
+            editor: jbob_glue::sexpr_editor::SexprEditor::new(expr.into()),
         }
     }
 
@@ -67,9 +67,9 @@ impl egui::Widget for &mut SexprEditor {
     }
 }
 
-pub fn adapt_event(e: &egui::Event) -> jbob_app::Event {
+pub fn adapt_event(e: &egui::Event) -> jbob_glue::Event {
     use egui::Event as X;
-    use jbob_app::Event as Y;
+    use jbob_glue::Event as Y;
     match e {
         X::Text(s) => Y::Edit(s.chars().next().unwrap()),
         Event::Key {
