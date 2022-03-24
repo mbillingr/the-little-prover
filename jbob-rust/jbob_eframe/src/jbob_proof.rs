@@ -76,7 +76,7 @@ impl egui::Widget for &mut JbobProof {
                         changed |= ui.add(&mut step.partial_result).changed();
                         if ui.button("copy").clicked() {
                             step.rewrite
-                                .set_expr(step.partial_result.selection().clone());
+                                .replace_cursor(step.partial_result.selection().clone());
                             changed = true;
                         }
                         changed |= ui.add(&mut step.rewrite).changed();

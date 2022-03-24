@@ -35,6 +35,11 @@ impl SexprEditor {
         self.expr().get(self.cursor()).unwrap()
     }
 
+    pub fn replace_selection(&mut self, expr: PrettyExpr<Style>) -> PrettyExpr<Style> {
+        let path = self.cursor().to_vec();
+        std::mem::replace(self.expr.get_mut(&path).unwrap(), expr)
+    }
+
     fn try_push_cursor(&mut self) -> bool {
         self.cursor.push(0);
         if self.expr.is_valid_path(&self.cursor) {

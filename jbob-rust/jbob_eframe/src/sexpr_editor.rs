@@ -23,6 +23,10 @@ impl SexprEditor {
     pub fn set_expr(&mut self, expr: impl Into<Sexpr>) {
         self.editor.set_expr(expr.into())
     }
+
+    pub fn replace_cursor(&mut self, expr: impl Into<Sexpr>) {
+        self.editor.replace_selection(expr.into());
+    }
 }
 
 impl egui::Widget for &mut SexprEditor {
