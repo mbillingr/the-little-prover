@@ -169,6 +169,16 @@ impl<T> PrettyExpr<T> {
         }
     }
 
+    pub fn as_slice(&self) -> Option<&[Self]> {
+        match self {
+            PrettyExpr::Atom(_) | PrettyExpr::Stat(_) | PrettyExpr::Quote(_) => None,
+            PrettyExpr::Inline(xs) | PrettyExpr::Expand(xs) | PrettyExpr::SemiExpand(_, xs) => {
+                Some(xs.as_slice())
+            }
+            PrettyExpr::Style(_, x) => x.as_slice(),
+        }
+    }
+
     pub fn quoted_value(&self) -> Option<&Self> {
         match self {
             PrettyExpr::Atom(_) | PrettyExpr::Stat(_) => None,

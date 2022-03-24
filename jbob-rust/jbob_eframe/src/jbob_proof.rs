@@ -17,6 +17,7 @@ pub struct JbobProof {
     seed: SexprEditor,
     steps: Vec<ProofStep>,
     resulting_defs: Option<(Sexpr, Sexpr)>,
+    needs_update: bool,
 }
 
 impl JbobProof {
@@ -27,7 +28,28 @@ impl JbobProof {
             seed: SexprEditor::new(2, Sexpr::Stat("nil")),
             steps: vec![],
             resulting_defs: None,
+            needs_update: false,
         }
+    }
+
+    pub fn update_defs(&mut self, defs: impl Into<Sexpr>) {
+        self.defs = defs.into();
+        self.needs_update = true;
+    }
+
+    pub fn name(&self) -> &str {
+        match self.statement.expr() {
+            expr if expr.as_slice().is_some() => match expr.as_slice().unwrap() {
+                [a, name, ..] => match a.get_text() {
+                    Some("defun" | "dethm") => name.get_text(),
+                    _ => None,
+                },
+                _ => None,
+            },
+            Sexpr::Quote(x) => x.get_text(),
+            other => other.get_text(),
+        }
+        .unwrap_or("<unnamed>")
     }
 
     pub fn take_resulting_defs(&mut self) -> Option<(Sexpr, Sexpr)> {
@@ -40,7 +62,10 @@ impl egui::Widget for &mut JbobProof {
         egui::ScrollArea::vertical()
             .stick_to_bottom()
             .show(ui, |ui| {
-                let mut changed = ui
+                let mut changed = self.needs_update;
+                self.needs_update = false;
+
+                changed |= ui
                     .horizontal(|ui| {
                         ui.label("Claim: ");
                         ui.add(&mut self.statement).changed()

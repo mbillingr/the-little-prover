@@ -11,6 +11,10 @@ impl SexprView {
         SexprView { expr: expr.into() }
     }
 
+    pub fn expr(&self) -> &Sexpr {
+        &self.expr
+    }
+
     pub fn set_expr(&mut self, expr: impl Into<Sexpr>) {
         self.expr = expr.into();
     }

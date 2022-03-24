@@ -15,11 +15,12 @@ pub struct TemplateApp<'a> {
 
     // this how you opt-out of serialization of a member
     //#[cfg_attr(feature = "persistence", serde(skip))]
-    sexpr_view: SexprView,
+    all_defs: SexprView,
+    user_defs: Sexpr,
 
-    proof: JbobProof,
+    current_proof: JbobProof,
+    dormant_proofs: Vec<JbobProof>,
 
-    definitions: Sexpr,
     import_script: Option<String>,
 }
 
@@ -30,9 +31,10 @@ impl Default for TemplateApp<'_> {
         Self {
             jbob_context,
             //jbob_defs,
-            sexpr_view: SexprView::new(jbob_defs),
-            proof: JbobProof::new(jbob_defs),
-            definitions: Sexpr::empty_list(),
+            all_defs: SexprView::new(jbob_defs),
+            current_proof: JbobProof::new(jbob_defs),
+            dormant_proofs: vec![],
+            user_defs: Sexpr::empty_list(),
             import_script: None,
         }
     }
@@ -84,6 +86,32 @@ impl<'a> epi::App for TemplateApp<'a> {
                         frame.quit();
                     }
                 });
+                ui.menu_button("Switch Proof", |ui| {
+                    if ui.button("New").clicked() {
+                        let pf = std::mem::replace(
+                            &mut self.current_proof,
+                            JbobProof::new(self.all_defs.expr().clone()),
+                        );
+                        self.dormant_proofs.push(pf);
+                    }
+
+                    let mut switch = None;
+                    for (i, pf) in self.dormant_proofs.iter().enumerate() {
+                        if ui.button(pf.name()).clicked() {
+                            switch = Some(i);
+                            break;
+                        }
+                    }
+
+                    if let Some(i) = switch {
+                        let pf = self.dormant_proofs.remove(i);
+                        let old = std::mem::replace(&mut self.current_proof, pf);
+                        self.dormant_proofs.push(old);
+
+                        self.current_proof.update_defs(self.all_defs.expr().clone());
+                    }
+                });
+                ui.add_space(20.0);
                 egui::warn_if_debug_build(ui);
             });
         });
@@ -93,7 +121,7 @@ impl<'a> epi::App for TemplateApp<'a> {
             egui::ScrollArea::vertical()
                 .stick_to_bottom()
                 .show(ui, |ui| {
-                    ui.add(&mut self.sexpr_view);
+                    ui.add(&mut self.all_defs);
                 });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
@@ -110,13 +138,13 @@ impl<'a> epi::App for TemplateApp<'a> {
         egui::CentralPanel::default().show(ctx, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
             ui.heading("Current Proof");
-            ui.add(&mut self.proof)
+            ui.add(&mut self.current_proof)
         });
 
-        if let Some((defs, definition)) = self.proof.take_resulting_defs() {
-            self.proof = JbobProof::new(defs.clone());
-            self.sexpr_view.set_expr(defs);
-            self.definitions.append(definition.take(&[0]).unwrap());
+        if let Some((defs, definition)) = self.current_proof.take_resulting_defs() {
+            self.current_proof = JbobProof::new(defs.clone());
+            self.all_defs.set_expr(defs);
+            self.user_defs.append(definition.take(&[0]).unwrap());
         }
 
         if let Some(script) = &mut self.import_script {
@@ -137,16 +165,16 @@ impl<'a> epi::App for TemplateApp<'a> {
                             }
                             Ok(pfs) => {
                                 let defs = j_bob::j_bob_slash_define(ctx, j_bob::prelude(ctx), pfs);
-                                self.sexpr_view.set_expr(defs);
-                                self.definitions = pfs.into();
-                                self.proof = JbobProof::new(defs.clone());
+                                self.all_defs.set_expr(defs);
+                                self.user_defs = pfs.into();
+                                self.current_proof = JbobProof::new(defs.clone());
                                 should_close = true;
                             }
                         }
                     }
 
                     if ui.button("Export").clicked() {
-                        *script = self.definitions.to_string();
+                        *script = self.user_defs.to_string();
                     }
                 })
             });
