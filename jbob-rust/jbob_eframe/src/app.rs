@@ -86,7 +86,7 @@ impl<'a> epi::App for TemplateApp<'a> {
                         frame.quit();
                     }
                 });
-                ui.menu_button("Switch Proof", |ui| {
+                ui.menu_button("Proof", |ui| {
                     if ui.button("New").clicked() {
                         let pf = std::mem::replace(
                             &mut self.current_proof,
