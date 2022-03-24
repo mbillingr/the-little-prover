@@ -173,6 +173,23 @@ impl SexprEditor {
         }
     }
 
+    pub fn insert_element_before_cursor(&mut self) {
+        match self.cursor.as_slice() {
+            [c_list @ .., c_elem] => {
+                let c_elem = *c_elem;
+                let x = self.expr.get_mut(c_list).unwrap();
+                if x.is_quotation() {
+                    self.move_cursor_out_of_list();
+                    self.insert_element_before_cursor();
+                } else {
+                    let elements = x.elements_mut().unwrap();
+                    elements.insert(c_elem, PrettyExpr::empty_list());
+                }
+            }
+            _ => {}
+        }
+    }
+
     pub fn quote_cursor(&mut self) {
         let x = self.expr.get_mut(&self.cursor).unwrap();
         let y = x.clone();
@@ -204,6 +221,7 @@ impl SexprEditor {
             EditWrap => self.wrap_cursor_in_list(),
             EditUnwrap => self.unwrap_unary_list_at_cursor(),
             EditDelete => self.delete_cursor_element(),
+            EditInsert => self.insert_element_before_cursor(),
             Edit('\'') => {
                 self.quote_cursor();
                 self.move_cursor_into_list();

@@ -87,6 +87,11 @@ pub fn adapt_event(e: &egui::Event) -> jbob_glue::Event {
             ..
         } => Y::EditDelete,
         Event::Key {
+            key: Key::Insert,
+            pressed: true,
+            ..
+        } => Y::EditInsert,
+        Event::Key {
             key: Key::ArrowRight | Key::ArrowDown,
             pressed: true,
             modifiers: egui::Modifiers { ctrl: true, .. },

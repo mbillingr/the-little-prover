@@ -4,6 +4,7 @@ pub enum Event {
     Edit(char),
     EditBackspace,
     EditDelete,
+    EditInsert,
     EditWrap,
     EditUnwrap,
     NavPrev,
