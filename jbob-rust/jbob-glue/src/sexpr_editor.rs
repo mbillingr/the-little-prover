@@ -118,7 +118,7 @@ impl SexprEditor {
             let text = text.to_string() + postfix;
             *x = PrettyExpr::Atom(text);
         } else if x.is_empty_list() {
-            x.elements_mut()
+            x.as_vec_mut()
                 .unwrap()
                 .push(PrettyExpr::Atom(postfix.to_string()));
             self.move_cursor_into_list();
@@ -164,7 +164,7 @@ impl SexprEditor {
                     self.move_cursor_out_of_list();
                     self.insert_element_after_cursor();
                 } else {
-                    let elements = x.elements_mut().unwrap();
+                    let elements = x.as_vec_mut().unwrap();
                     elements.insert(c_elem + 1, PrettyExpr::empty_list());
                     self.move_cursor_in_list(1);
                 }
@@ -182,8 +182,68 @@ impl SexprEditor {
                     self.move_cursor_out_of_list();
                     self.insert_element_before_cursor();
                 } else {
-                    let elements = x.elements_mut().unwrap();
+                    let elements = x.as_vec_mut().unwrap();
                     elements.insert(c_elem, PrettyExpr::empty_list());
+                }
+            }
+            _ => {}
+        }
+    }
+
+    pub fn grow_list_left(&mut self) {
+        match self.cursor.as_slice() {
+            [c_outer @ .., c_elem] if *c_elem > 0 => {
+                if self.selection().is_list() {
+                    let outer = self.expr.get_mut(c_outer).unwrap();
+                    let idx_before = c_elem - 1;
+                    let moved_item = outer.remove(&[idx_before]).unwrap();
+                    let inner = outer.get_mut(&[idx_before]).unwrap();
+                    inner.as_vec_mut().unwrap().insert(0, moved_item);
+                    *self.cursor.last_mut().unwrap() = idx_before;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    pub fn grow_list_right(&mut self) {
+        match self.cursor.as_slice() {
+            [c_outer @ .., c_elem] => {
+                if self.selection().is_list() {
+                    let outer = self.expr.get_mut(c_outer).unwrap();
+                    let idx_next = c_elem + 1;
+                    if idx_next < outer.len() {
+                        let moved_item = outer.remove(&[idx_next]).unwrap();
+                        let inner = outer.get_mut(&[*c_elem]).unwrap();
+                        inner.as_vec_mut().unwrap().push(moved_item);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    pub fn shrink_list_left(&mut self) {
+        match self.cursor.as_slice() {
+            [c_outer @ .., c_list] => {
+                if !self.selection().is_atom() {
+                    let outer = self.expr.get_mut(c_outer).unwrap().as_vec_mut().unwrap();
+                    let moved_item = outer[*c_list].as_vec_mut().unwrap().remove(0);
+                    outer.insert(*c_list, moved_item);
+                    *self.cursor.last_mut().unwrap() += 1;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    pub fn shrink_list_right(&mut self) {
+        match self.cursor.as_slice() {
+            [c_outer @ .., c_list] => {
+                if !self.selection().is_atom() {
+                    let outer = self.expr.get_mut(c_outer).unwrap().as_vec_mut().unwrap();
+                    let moved_item = outer[*c_list].as_vec_mut().unwrap().pop().unwrap();
+                    outer.insert(c_list + 1, moved_item);
                 }
             }
             _ => {}
@@ -204,7 +264,7 @@ impl SexprEditor {
 
     pub fn unwrap_unary_list_at_cursor(&mut self) {
         let x = self.expr.get_mut(&self.cursor).unwrap();
-        if let Some([y]) = x.elements() {
+        if let Some([y]) = x.as_slice() {
             *x = y.clone();
         } else if let Some(y) = x.quoted_value() {
             *x = y.clone();
@@ -234,6 +294,10 @@ impl SexprEditor {
             Edit(' ') => self.insert_element_after_cursor(),
             Edit(ch) => self.append_at_cursor(&ch.to_string()),
             EditBackspace => self.delete_at_cursor(),
+            EditGrowLeft => self.grow_list_left(),
+            EditGrowRight => self.grow_list_right(),
+            EditShrinkLeft => self.shrink_list_left(),
+            EditShrinkRight => self.shrink_list_right(),
             _ => return false,
         }
         true

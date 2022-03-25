@@ -111,6 +111,21 @@ impl<T> PrettyExpr<T> {
         }
     }
 
+    pub fn remove(&mut self, path: &[usize]) -> Option<Self> {
+        use PrettyExpr::*;
+        match (path, self) {
+            ([p], Inline(xs) | Expand(xs) | SemiExpand(_, xs)) => Some(xs.remove(*p)),
+            (_, Style(_, x)) => x.remove(path),
+            ([0, rest @ ..], Quote(x)) => x.remove(rest),
+            ([p, rest @ ..], Inline(xs) | Expand(xs) | SemiExpand(_, xs)) => {
+                xs.get_mut(*p).and_then(|x| x.remove(rest))
+            }
+            ([], _) => None,
+            (_, Quote(_)) => None,
+            (_, Atom(_) | Stat(_)) => None,
+        }
+    }
+
     fn list_with_style(
         xs: Vec<Self>,
         p: usize,
@@ -134,8 +149,19 @@ impl<T> PrettyExpr<T> {
         match self {
             PrettyExpr::Atom(_) | PrettyExpr::Stat(_) => true,
             PrettyExpr::Quote(_) => true,
-            PrettyExpr::Inline(_) | PrettyExpr::Expand(_) | PrettyExpr::SemiExpand(_, _) => false,
+            PrettyExpr::Inline(xs) | PrettyExpr::Expand(xs) | PrettyExpr::SemiExpand(_, xs) => {
+                xs.is_empty()
+            }
             PrettyExpr::Style(_, x) => x.is_atom(),
+        }
+    }
+
+    pub fn is_list(&self) -> bool {
+        match self {
+            PrettyExpr::Atom(_) | PrettyExpr::Stat(_) => false,
+            PrettyExpr::Quote(_) => false,
+            PrettyExpr::Inline(_) | PrettyExpr::Expand(_) | PrettyExpr::SemiExpand(_, _) => true,
+            PrettyExpr::Style(_, x) => x.is_list(),
         }
     }
 
@@ -169,16 +195,6 @@ impl<T> PrettyExpr<T> {
         }
     }
 
-    pub fn as_slice(&self) -> Option<&[Self]> {
-        match self {
-            PrettyExpr::Atom(_) | PrettyExpr::Stat(_) | PrettyExpr::Quote(_) => None,
-            PrettyExpr::Inline(xs) | PrettyExpr::Expand(xs) | PrettyExpr::SemiExpand(_, xs) => {
-                Some(xs.as_slice())
-            }
-            PrettyExpr::Style(_, x) => x.as_slice(),
-        }
-    }
-
     pub fn quoted_value(&self) -> Option<&Self> {
         match self {
             PrettyExpr::Atom(_) | PrettyExpr::Stat(_) => None,
@@ -188,25 +204,25 @@ impl<T> PrettyExpr<T> {
         }
     }
 
-    pub fn elements(&self) -> Option<&[Self]> {
+    pub fn as_slice(&self) -> Option<&[Self]> {
         match self {
             PrettyExpr::Atom(_) | PrettyExpr::Stat(_) => None,
             PrettyExpr::Quote(_) => None,
             PrettyExpr::Inline(xs) | PrettyExpr::Expand(xs) | PrettyExpr::SemiExpand(_, xs) => {
                 Some(xs.as_slice())
             }
-            PrettyExpr::Style(_, x) => x.elements(),
+            PrettyExpr::Style(_, x) => x.as_slice(),
         }
     }
 
-    pub fn elements_mut(&mut self) -> Option<&mut Vec<Self>> {
+    pub fn as_vec_mut(&mut self) -> Option<&mut Vec<Self>> {
         match self {
             PrettyExpr::Atom(_) | PrettyExpr::Stat(_) => None,
             PrettyExpr::Quote(_) => None,
             PrettyExpr::Inline(xs) | PrettyExpr::Expand(xs) | PrettyExpr::SemiExpand(_, xs) => {
                 Some(xs)
             }
-            PrettyExpr::Style(_, x) => x.elements_mut(),
+            PrettyExpr::Style(_, x) => x.as_vec_mut(),
         }
     }
 

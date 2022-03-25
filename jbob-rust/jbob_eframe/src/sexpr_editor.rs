@@ -92,6 +92,26 @@ pub fn adapt_event(e: &egui::Event) -> jbob_glue::Event {
             ..
         } => Y::EditInsert,
         Event::Key {
+            key: Key::ArrowLeft,
+            pressed: true,
+            modifiers: egui::Modifiers { shift: true, .. },
+        } => Y::EditGrowLeft,
+        Event::Key {
+            key: Key::ArrowRight,
+            pressed: true,
+            modifiers: egui::Modifiers { shift: true, .. },
+        } => Y::EditGrowRight,
+        Event::Key {
+            key: Key::ArrowUp,
+            pressed: true,
+            modifiers: egui::Modifiers { shift: true, .. },
+        } => Y::EditShrinkLeft,
+        Event::Key {
+            key: Key::ArrowDown,
+            pressed: true,
+            modifiers: egui::Modifiers { shift: true, .. },
+        } => Y::EditShrinkRight,
+        Event::Key {
             key: Key::ArrowRight | Key::ArrowDown,
             pressed: true,
             modifiers: egui::Modifiers { ctrl: true, .. },
