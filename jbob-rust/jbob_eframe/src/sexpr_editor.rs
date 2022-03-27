@@ -53,7 +53,6 @@ impl egui::Widget for &mut SexprEditor {
         let rect = build_sexpr_ui(
             ui,
             expr,
-            egui::FontId::monospace(14.0),
             ui.max_rect().width(),
         );
 

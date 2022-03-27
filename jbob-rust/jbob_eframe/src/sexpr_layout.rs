@@ -1,14 +1,16 @@
 use eframe::egui;
 use jbob_glue::{Formatter, PrettyFormatter, Sexpr, Style};
 
+const FONT_SIZE: f32 = 21.0;
+
 pub fn build_sexpr_ui(
     ui: &mut egui::Ui,
     expr: Sexpr,
-    font: egui::FontId,
     wrap_width: f32,
 ) -> egui::Rect {
     ui.vertical(|ui| {
         ui.set_width(wrap_width);
+        let font = egui::FontId::monospace(FONT_SIZE);
         let char_width = ui.fonts().glyph_width(&font, '_');
         // assuming all chars in a monospace font have the same width
         let max_row_len = (wrap_width / char_width).floor().max(1.0) as usize - 1;
@@ -50,6 +52,7 @@ impl<'a> UiFormatter<'a> {
         let text = std::mem::replace(&mut self.fragment, String::new());
         let styled_text = egui::RichText::new(text)
             .monospace()
+            .size(FONT_SIZE)
             .color(self.current_style.color)
             .background_color(self.current_style.background);
         self.current_line.append(styled_text);

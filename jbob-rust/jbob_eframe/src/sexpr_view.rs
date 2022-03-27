@@ -25,7 +25,6 @@ impl egui::Widget for &mut SexprView {
         build_sexpr_ui(
             ui,
             self.expr.clone(),
-            egui::FontId::monospace(14.0),
             ui.max_rect().width(),
         );
 
